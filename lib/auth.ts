@@ -12,13 +12,13 @@ export const auth = betterAuth({
     enabled: true,
   },
   user: {
-       additionalFields: {
-          role: {
-              type: ["seeker","recruiter","admin"],
-              input: false
-            } 
-        }
+    additionalFields: {
+      role: {
+        type: ["seeker", "recruiter", "admin"],
+        input: true,
+      },
     },
+  },
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID as string,

@@ -22,9 +22,10 @@ Verify before committing: `npm run typecheck && npm run lint`, then `npm run for
 
 ## Dev prerequisites
 
-- `.env` is gitignored but required locally: it must define `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` (shape in the existing `.env`; use `http://localhost:3000` locally).
-- better-auth connects to MongoDB at `mongodb://localhost:27017` (db `hireloopdb`, hardcoded in `lib/auth.ts`) — a local MongoDB must be running for auth to work.
+- `.env` is gitignored but required locally: it must define `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and `BETTER_AUTH_DB_URI` (shape in the existing `.env`; use `http://localhost:3000` and `mongodb://localhost:27017` locally).
+- better-auth connects to MongoDB via `BETTER_AUTH_DB_URI` (db `hireloopdb`) — a local MongoDB must be running for auth to work.
 - GitHub social login additionally needs `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`.
+- Sign-up includes an account-type selection (seeker / recruiter / admin) sent as the `role` additional field to better-auth `signUp.email`.
 
 ## Architecture
 
