@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { createJob } from "@/lib/actions/jobs"
 
 const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship"] as const
 type JobType = (typeof JOB_TYPES)[number]
@@ -34,7 +35,7 @@ const JOB_CATEGORIES = [
 
 const FREQUENCIES = ["per hour", "per day", "per month", "per year"]
 
-type JobForm = {
+export type JobFormData = {
   title: string
   company: string
   category: string
@@ -87,7 +88,7 @@ export default function NewJobPage() {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     const missing = REQUIRED_FIELDS.filter(
@@ -104,13 +105,8 @@ export default function NewJobPage() {
     // Data is collected here — swap this for the API call when it exists.
     console.log("New job payload:", form)
 
-    fetch("http://localhost:5000/jobs" , {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-    })
+    const result = await createJob(form)
+    console.log("Job creation result:", result)
 
     toast.success("Job published!", {
       description: `${form.title} at ${form.company}`,
