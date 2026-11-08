@@ -9,17 +9,20 @@ import { Menu, X, LogOut } from "lucide-react"
 import Image from "next/image"
 import { useSession, signOut } from "@/lib/auth-client"
 
-const NAV_LINKS = [
-  { href: "/jobs", label: "Browse Jobs" },
-  { href: "/company", label: "Company" },
-  { href: "/pricing", label: "Pricing" },
-]
+
 
 export function Navbar() {
   const [open, setOpen] = React.useState(false)
   const pathname = usePathname()
 
   const { data: session } = useSession()
+
+  const NAV_LINKS = [
+  { href: "/jobs", label: "Browse Jobs" },
+  { href: "/company", label: "Company" },
+  { href: "/pricing", label: "Pricing" },
+  { href: `/dashboard/${session?.user?.role || "seeker"}`, label: "Dashboard" },
+]
 
   const handleSignOut = async () => {
     await signOut()

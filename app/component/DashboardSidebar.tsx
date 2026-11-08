@@ -90,7 +90,7 @@ const menuItemByRole: Record<Role, MenuItem[]> = {
       icon: Settings,
     },
   ],
-  
+
   recruiter: [
     {
       id: "recruiter-dashboard",
@@ -101,13 +101,19 @@ const menuItemByRole: Record<Role, MenuItem[]> = {
     {
       id: "recruiter-jobs",
       name: "Manage-jobs",
-      url: "/dashboard/recruiter/manage-jobs",
+      url: "/dashboard/recruiter/jobs",
       icon: Building2,
     },
     
     {
-      id: "recruiter-new-job",
+      id: "recruiter-applications",
       name: "Applications",
+      url: "/dashboard/recruiter/applications",
+      icon: FileText,
+    },
+    {
+      id: "add-jobs",
+      name: "Add Jobs",
       url: "/dashboard/recruiter/jobs/new",
       icon: PlusCircle,
     },
@@ -124,6 +130,7 @@ const menuItemByRole: Record<Role, MenuItem[]> = {
       icon: Settings,
     },
   ],
+
   admin: [
     {
       id: "admin-dashboard",
@@ -242,7 +249,7 @@ export function DashboardSidebar() {
             {items.map((item) => (
               <SidebarMenuItem key={item.id}>
                 <SidebarMenuButton
-                  render={<a href={item.url} />}
+                  render={<Link href={item.url} />}
                   isActive={pathname === item.url}
                 >
                   <item.icon />
@@ -259,7 +266,7 @@ export function DashboardSidebar() {
             {publicLinks.map((item) => (
               <SidebarMenuItem key={item.id}>
                 <SidebarMenuButton
-                  render={<a href={item.url} />}
+                  render={<Link href={item.url} />}
                   isActive={pathname === item.url}
                 >
                   <item.icon />
