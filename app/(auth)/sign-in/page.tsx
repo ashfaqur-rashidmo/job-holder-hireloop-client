@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Mail, Lock, User } from "lucide-react"
-
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth-client"
@@ -16,6 +17,18 @@ type SignInData = {
 export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const router = useRouter()
+  const { data: session, isPending } = authClient.useSession()
+
+  useEffect(() => {
+    if (!isPending && session) {
+      router.push("/")
+    }
+  }, [session, isPending, router])
+
+  if (isPending) {
+    return null
+  }
 
   const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -37,10 +50,13 @@ export default function SignInPage() {
         password: collected.password,
         callbackURL: "/",
       })
+
+      toast.success("Signed in successfully")
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to sign in"
 
       setError(message)
+      toast.error("Sign in failed", { description: message })
     } finally {
       setIsLoading(false)
     }

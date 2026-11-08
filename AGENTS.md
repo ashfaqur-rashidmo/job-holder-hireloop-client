@@ -25,13 +25,14 @@ Verify before committing: `npm run typecheck && npm run lint`, then `npm run for
 - `.env` is gitignored but required locally: it must define `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and `BETTER_AUTH_DB_URI` (shape in the existing `.env`; use `http://localhost:3000` and `mongodb://localhost:27017` locally).
 - better-auth connects to MongoDB via `BETTER_AUTH_DB_URI` (db `hireloopdb`) — a local MongoDB must be running for auth to work.
 - GitHub social login additionally needs `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`.
-- Sign-up includes an account-type selection (seeker / recruiter / admin) sent as the `role` additional field to better-auth `signUp.email`.
+- Sign-up includes an account-type selection (seeker / recruiter / admin) sent as the `role` additional field to better-auth `signUp.email`. Uses `sonner` for success/error toasts (`toast.success` / `toast.error`).
+- Auth pages (`/sign-in`, `/sign-up`) redirect to `/` when a session already exists (checked via `authClient.useSession()`).
 
 ## Architecture
 
 - Next.js 16 App Router: `app/layout.tsx` (root), `app/page.tsx` (renders `HeroSection`), API routes under `app/api`.
-- Hero section: `components/Hero-Section.tsx` (navbar + badge + job search + trending roles + globe background). References `public/images/globe.png`; `public/images/cta-bg.png` exists but isn't referenced in source.
-- Navbar: `components/navbar.tsx` (responsive, rendered in both `app/layout.tsx` and `Hero-Section.tsx` — renders twice on `/`).
+- Hero section: `components/Hero-Section.tsx` (badge + job search + trending roles + globe background + 4 stat cards at bottom). References `public/images/globe.png`; `public/images/cta-bg.png` exists but isn't referenced in source.
+- Navbar: `components/navbar.tsx` (responsive, rendered in `app/layout.tsx`). Nav links always visible; when logged in shows "Welcome, {name}" + Sign Out button; when logged out shows Sign In / Get Started buttons.
 - Auth: server `lib/auth.ts` (betterAuth + `@better-auth/mongo-adapter`), client `lib/auth-client.ts` (`createAuthClient`), route handler `app/api/auth/[...all]/route.ts`.
 - Imports: `@/*` alias; shadcn/ui at `@/components/ui` (button, input, separator); `cn` from `@/lib/utils` (re-exports the `cn` package).
 - Tailwind CSS v4 via `@tailwindcss/postcss`; design tokens in `app/globals.css` (`@import "tailwindcss"`). Prettier uses the tailwind plugin with `tailwindStylesheet: app/globals.css` and `tailwindFunctions: ["cn", "cva"]`.

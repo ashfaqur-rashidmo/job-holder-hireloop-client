@@ -4,8 +4,9 @@ import * as React from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Menu, X } from "lucide-react"
+import { Menu, X, LogOut } from "lucide-react"
 import Image from "next/image"
+import { useSession, signOut } from "@/lib/auth-client"
 
 const NAV_LINKS = [
   { href: "/jobs", label: "Browse Jobs" },
@@ -16,18 +17,18 @@ const NAV_LINKS = [
 export function Navbar() {
   const [open, setOpen] = React.useState(false)
 
+  const { data: session } = useSession()
+
+  const handleSignOut = async () => {
+    await signOut()
+    setOpen(false)
+  }
+
+  const userName = session?.user?.name || session?.user?.email
+  const isAuthenticated = !!session
+
   return (
     <>
-      <button
-        onClick={() => setOpen((prev) => !prev)}
-        aria-expanded={open}
-        aria-label="Toggle navigation menu"
-        className="inline-flex items-center justify-center rounded-md p-2 text-white focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none md:hidden"
-      >
-        <Menu className="size-5" aria-hidden="true" />
-        <span className="sr-only">Toggle menu</span>
-      </button>
-
       <nav className="fixed top-0 z-40 w-full border-b border-white/10 bg-[#0a0a0a]">
         <div className="flex h-12 items-center justify-between px-4 lg:px-8">
           <div className="flex items-center gap-2">
@@ -41,6 +42,7 @@ export function Navbar() {
             </Link>
           </div>
 
+          {/* Nav links — always visible */}
           <div className="hidden items-center gap-8 text-sm font-medium text-white lg:flex">
             {NAV_LINKS.map((item) => (
               <Link
@@ -55,12 +57,30 @@ export function Navbar() {
               orientation="vertical"
               className="mx-2 border-white/20"
             />
-            <Link
-              href="/sign-in"
-              className="text-indigo-400 transition-colors hover:text-indigo-300"
-            >
-              Sign In
-            </Link>
+
+            {isAuthenticated ? (
+              <>
+                <span className="text-sm font-medium text-gray-300">
+                  Welcome, {userName}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="text-indigo-400 hover:bg-white/5 hover:text-indigo-300"
+                >
+                  <LogOut className="mr-1 size-4" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Link
+                href="/sign-in"
+                className="text-indigo-400 transition-colors hover:text-indigo-300"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
@@ -69,7 +89,7 @@ export function Navbar() {
               size="lg"
               className="hidden rounded-full px-6 md:inline-flex"
             >
-              Get Started
+              {isAuthenticated ? "Post a Job" : "Get Started"}
             </Button>
           </div>
         </div>
@@ -111,13 +131,30 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
-              <Link
-                href="/sign-in"
-                onClick={() => setOpen(false)}
-                className="text-indigo-400 transition-colors hover:text-indigo-300"
-              >
-                Sign In
-              </Link>
+              {isAuthenticated ? (
+                <div className="my-4 flex items-center gap-3 border-t border-white/10 pt-4">
+                  <span className="text-sm font-medium text-gray-300">
+                    Welcome, {userName}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSignOut}
+                    className="text-indigo-400 hover:bg-white/5 hover:text-indigo-300"
+                  >
+                    <LogOut className="mr-1 size-4" />
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
+                <Link
+                  href="/sign-in"
+                  onClick={() => setOpen(false)}
+                  className="text-indigo-400 transition-colors hover:text-indigo-300"
+                >
+                  Sign In
+                </Link>
+              )}
             </nav>
             <div className="flex gap-3 p-6">
               <Button
@@ -126,7 +163,7 @@ export function Navbar() {
                 className="w-full rounded-full px-6"
                 onClick={() => setOpen(false)}
               >
-                Get Started
+                {isAuthenticated ? "Post a Job" : "Get Started"}
               </Button>
             </div>
           </aside>

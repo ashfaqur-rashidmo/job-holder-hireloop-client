@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import {
   Mail,
@@ -12,6 +12,8 @@ import {
   Building2,
   Shield,
 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth-client"
@@ -58,6 +60,18 @@ export default function SignUpPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [role, setRole] = useState<"seeker" | "recruiter" | "admin">("seeker")
+  const router = useRouter()
+  const { data: session, isPending } = authClient.useSession()
+
+  useEffect(() => {
+    if (!isPending && session) {
+      router.push("/")
+    }
+  }, [session, isPending, router])
+
+  if (isPending) {
+    return null
+  }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -74,24 +88,36 @@ export default function SignUpPage() {
       role,
     }
 
+    console.log("SignUp form data:", collected)
+
     if (collected.password !== collected.confirmPassword) {
       setError("Passwords do not match")
       return
     }
 
     setIsLoading(true)
+
     try {
-      await authClient.signUp.email({
+      const response = await authClient.signUp.email({
         email: collected.email,
         password: collected.password,
         name: collected.fullName,
         callbackURL: "/",
         role: collected.role,
       } as never)
+
+      console.log("SignUp Response:", response)
+
+      toast.success("Account created successfully!", {
+        description: "Welcome to HireLoop, " + collected.fullName,
+      })
+
+      router.push("/")
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to create account"
       setError(message)
+      toast.error("Signup failed", { description: message })
     } finally {
       setIsLoading(false)
     }
@@ -241,6 +267,10 @@ export default function SignUpPage() {
                 Confirm password
               </label>
               <div className="relative">
+                <Lock
+                  className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-600"
+                  aria-hidden="true"
+                />
                 <Input
                   type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
