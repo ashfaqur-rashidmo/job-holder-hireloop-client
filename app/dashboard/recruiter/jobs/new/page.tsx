@@ -19,9 +19,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { createJob } from "@/lib/actions/jobs"
-
-const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship"] as const
-type JobType = (typeof JOB_TYPES)[number]
+import { JOB_TYPES, type JobFormData } from "@/lib/job"
 
 const JOB_CATEGORIES = [
   "Engineering & Tech",
@@ -35,22 +33,7 @@ const JOB_CATEGORIES = [
 
 const FREQUENCIES = ["per hour", "per day", "per month", "per year"]
 
-export type JobFormData = {
-  title: string
-  company: string
-  category: string
-  jobType: JobType
-  isRemote: boolean
-  location: string
-  deadline: string
-  minSalary: string
-  maxSalary: string
-  frequency: string
-  responsibilities: string
-  qualifications: string
-}
-
-const INITIAL_FORM: JobForm = {
+const INITIAL_FORM: JobFormData = {
   title: "",
   company: "",
   category: "",
@@ -65,7 +48,7 @@ const INITIAL_FORM: JobForm = {
   qualifications: "",
 }
 
-const REQUIRED_FIELDS: { key: keyof JobForm; label: string }[] = [
+const REQUIRED_FIELDS: { key: keyof JobFormData; label: string }[] = [
   { key: "title", label: "Job Title" },
   { key: "company", label: "Company Name" },
   { key: "category", label: "Job Category" },
@@ -82,9 +65,9 @@ const textareaClass =
   "min-h-28 resize-y rounded-lg border-border/60 bg-muted/30 text-sm shadow-none focus-visible:border-indigo-500/60 focus-visible:ring-indigo-500/30"
 
 export default function NewJobPage() {
-  const [form, setForm] = React.useState<JobForm>(INITIAL_FORM)
+  const [form, setForm] = React.useState<JobFormData>(INITIAL_FORM)
 
-  function update<K extends keyof JobForm>(key: K, value: JobForm[K]) {
+  function update<K extends keyof JobFormData>(key: K, value: JobFormData[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
@@ -136,8 +119,6 @@ export default function NewJobPage() {
             across our network.
           </p>
         </div>
-
-        
       </div>
 
       <form
