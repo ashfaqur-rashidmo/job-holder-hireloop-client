@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Menu, X, LogOut } from "lucide-react"
@@ -16,6 +17,7 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const [open, setOpen] = React.useState(false)
+  const pathname = usePathname()
 
   const { data: session } = useSession()
 
@@ -26,6 +28,11 @@ export function Navbar() {
 
   const userName = session?.user?.name || session?.user?.email
   const isAuthenticated = !!session
+
+  // The dashboard renders its own sidebar shell.
+  if (pathname.startsWith("/dashboard")) {
+    return null
+  }
 
   return (
     <>
@@ -91,6 +98,17 @@ export function Navbar() {
             >
               {isAuthenticated ? "Post a Job" : "Get Started"}
             </Button>
+
+            {/* Mobile menu toggle — must live inside the bar so it isn't covered */}
+            <button
+              onClick={() => setOpen((prev) => !prev)}
+              aria-expanded={open}
+              aria-label="Toggle navigation menu"
+              className="inline-flex items-center justify-center rounded-md p-2 text-white focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none lg:hidden"
+            >
+              <Menu className="size-5" aria-hidden="true" />
+              <span className="sr-only">Toggle menu</span>
+            </button>
           </div>
         </div>
       </nav>

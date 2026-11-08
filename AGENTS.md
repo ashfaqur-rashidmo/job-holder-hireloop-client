@@ -31,11 +31,17 @@ Verify before committing: `npm run typecheck && npm run lint`, then `npm run for
 ## Architecture
 
 - Next.js 16 App Router: `app/layout.tsx` (root), `app/page.tsx` (renders `HeroSection`), API routes under `app/api`.
-- Hero section: `components/Hero-Section.tsx` (badge + job search + trending roles + globe background + 4 stat cards at bottom). References `public/images/globe.png`; `public/images/cta-bg.png` exists but isn't referenced in source.
-- Navbar: `components/navbar.tsx` (responsive, rendered in `app/layout.tsx`). Nav links always visible; when logged in shows "Welcome, {name}" + Sign Out button; when logged out shows Sign In / Get Started buttons.
-- Auth: server `lib/auth.ts` (betterAuth + `@better-auth/mongo-adapter`), client `lib/auth-client.ts` (`createAuthClient`), route handler `app/api/auth/[...all]/route.ts`.
-- Imports: `@/*` alias; shadcn/ui at `@/components/ui` (button, input, separator); `cn` from `@/lib/utils` (re-exports the `cn` package).
+- Hero section: `components/Hero-Section.tsx` (badge + job search + trending roles + globe background + 4 stat cards at bottom). References `public/images/globe.png` (1440×1882 portrait; earth sits ~34–71% down the image). The image is anchored to the hero bottom and top-masked below `lg`; `public/images/cta-bg.png` exists but isn't referenced in source.
+- Navbar: `components/navbar.tsx` (responsive, rendered in `app/layout.tsx`). Nav links always visible; when logged in shows "Welcome, {name}" + Sign Out button; when logged out shows Sign In / Get Started buttons. Returns `null` on `/dashboard/*` so the dashboard keeps its own shell.
+- Dashboard: `app/dashboard/{seeker,recruiter,admin}/page.tsx`, shell in `app/dashboard/layout.tsx` (`SidebarProvider` + `SidebarInset`), sidebar in `app/component/DashboardSidebar.tsx` (note: `component`, not `components`). Role menus live in its `menuItemByRole: Record<Role, MenuItem[]>` using `{ id, name, url, icon }`; role comes from `session.user.role` ("seeker" | "recruiter" | "admin").
+- Auth: server `lib/auth.ts` (betterAuth + `@better-auth/mongo-adapter`), client `lib/auth-client.ts` (`createAuthClient` + `inferAdditionalFields<typeof auth>()`), route handler `app/api/auth/[...all]/route.ts`.
+- Imports: `@/*` alias; shadcn/base-ui at `@/components/ui` (button, input, separator, sidebar, sheet, skeleton, tooltip); `cn` from `@/lib/utils` (re-exports the `cn` package).
 - Tailwind CSS v4 via `@tailwindcss/postcss`; design tokens in `app/globals.css` (`@import "tailwindcss"`). Prettier uses the tailwind plugin with `tailwindStylesheet: app/globals.css` and `tailwindFunctions: ["cn", "cva"]`.
+- Route/feature source of truth: `Module-50/hireloop-resources/Project requirements.md` (and `hireloop.fig`). Dashboard paths there (`/dashboard/seeker/jobs`, `/dashboard/admin/users`, etc.) drive the sidebar links.
+
+## Known lint gotcha
+
+- `npm run lint` currently errors on `hooks/use-mobile.ts` (`react-hooks/set-state-in-effect`, pre-existing). `typecheck`, `format`, and `build` still pass. Do not assume the whole repo lints clean.
 
 ## Generated / do not edit
 

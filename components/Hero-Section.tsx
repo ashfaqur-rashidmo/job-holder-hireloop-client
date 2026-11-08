@@ -30,7 +30,7 @@ export default function HeroSection() {
           width={1440}
           height={1882}
           priority
-          className="absolute bottom-[-180px] left-1/2 h-auto w-[720px] max-w-none -translate-x-1/2 object-contain select-none sm:bottom-[-240px] sm:w-[900px] lg:bottom-[-340px] lg:w-[1200px]"
+          className="absolute bottom-[-120px] left-1/2 h-auto w-[860px] max-w-none -translate-x-1/2 [mask-image:linear-gradient(to_bottom,transparent_0%,transparent_12%,black_34%)] object-contain select-none sm:bottom-[-200px] sm:w-[900px] lg:bottom-[-340px] lg:w-[1200px] lg:[mask-image:none]"
         />
         {/* subtle fade so the stat cards stay legible over the globe */}
         <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent" />
@@ -101,7 +101,7 @@ export default function HeroSection() {
         </div>
 
         {/* Trending roles */}
-        <div className="mx-auto mb-20 max-w-[760px]">
+        <div className="mx-auto mb-10 max-w-[760px] sm:mb-20">
           <div className="flex flex-wrap items-center justify-center gap-3">
             <span className="mr-2 text-[10px] font-medium tracking-wider text-gray-500 uppercase">
               Trending Position
@@ -121,7 +121,7 @@ export default function HeroSection() {
       </div>
 
       {/* Assisting statement + stat cards, layered over the globe */}
-      <div className="relative z-10 mx-auto max-w-7xl px-4 pt-20 pb-16 text-center sm:px-6 sm:pt-28 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 pt-10 pb-16 text-center sm:px-6 sm:pt-28 lg:px-8">
         <p className="mx-auto max-w-2xl text-center text-lg leading-snug font-medium tracking-tight text-white/90 sm:text-2xl md:text-3xl">
           Assisting over <span className="text-indigo-400">15,000</span> job
           seekers <br className="hidden sm:block" />
