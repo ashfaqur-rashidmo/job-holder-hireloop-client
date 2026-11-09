@@ -6,6 +6,8 @@ export const JOB_TYPES = [
 ] as const
 
 export type JobType = (typeof JOB_TYPES)[number]
+export type JobStatus = "Active" | "Expired"
+
 
 export type JobFormData = {
   title: string
@@ -20,4 +22,6 @@ export type JobFormData = {
   frequency: string
   responsibilities: string
   qualifications: string
+  applicants: number
+  status: JobStatus
 }

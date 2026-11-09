@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
   ArrowRight,
@@ -20,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { createJob } from "@/lib/actions/jobs"
 import { JOB_TYPES, type JobFormData } from "@/lib/job"
+
 
 const JOB_CATEGORIES = [
   "Engineering & Tech",
@@ -46,7 +48,11 @@ const INITIAL_FORM: JobFormData = {
   frequency: "per hour",
   responsibilities: "",
   qualifications: "",
+  status: "Active",
+  applicants: 0,
 }
+
+
 
 const REQUIRED_FIELDS: { key: keyof JobFormData; label: string }[] = [
   { key: "title", label: "Job Title" },
@@ -66,12 +72,14 @@ const textareaClass =
 
 export default function NewJobPage() {
   const [form, setForm] = React.useState<JobFormData>(INITIAL_FORM)
+  const router = useRouter()
 
   function update<K extends keyof JobFormData>(key: K, value: JobFormData[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    
     event.preventDefault()
 
     const missing = REQUIRED_FIELDS.filter(
@@ -89,11 +97,17 @@ export default function NewJobPage() {
     console.log("New job payload:", form)
 
     const result = await createJob(form)
-    console.log("Job creation result:", result)
+    
+    
+    if (result.insertedId) {
+      console.log("Job creation result:", result)
+      toast.success("Job published!", {
+        description: `${form.title} at ${form.company}`,
+      })
 
-    toast.success("Job published!", {
-      description: `${form.title} at ${form.company}`,
-    })
+      router.push("/dashboard/recruiter/jobs")
+      
+    }
   }
 
   return (

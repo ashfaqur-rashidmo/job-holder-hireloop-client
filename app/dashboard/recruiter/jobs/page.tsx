@@ -43,8 +43,6 @@ type JobStatus = "Active" | "Expired"
 
 export type JobPost = JobFormData & {
   _id: string
-  applicants: number
-  status: JobStatus
   postedAgo: string
 }
 
@@ -106,6 +104,14 @@ const FREQUENCY_UNIT: Record<string, string> = {
 // Helper functions
 function getCategoryMeta(category: string) {
   return CATEGORY_META[category] ?? DEFAULT_CATEGORY_META
+}
+
+function getStatus(job: JobPost) {
+  if (!job.deadline) return "Active"
+
+  const deadline = new Date(`${job.deadline}T23:59:59`)
+
+  return deadline < new Date() ? "Expired" : "Active"
 }
 
 function formatCompensation(job: JobPost) {
@@ -360,7 +366,7 @@ export default function RecruiterJobsPage() {
                       </TableCell>
 
                       <TableCell className="px-2.5 py-4">
-                        <StatusBadge status={job.status} />
+                        <StatusBadge status={getStatus(job)} />
                       </TableCell>
 
                       <TableCell className="px-2.5 py-4">
@@ -480,7 +486,7 @@ function JobCard({
           </div>
         </div>
 
-        <StatusBadge status={job.status} />
+        <StatusBadge status={getStatus(job)} />
       </div>
 
       <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
