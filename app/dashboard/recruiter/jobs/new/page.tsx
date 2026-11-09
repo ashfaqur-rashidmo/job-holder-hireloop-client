@@ -18,22 +18,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { IconInput } from "@/app/component/IconInput"
 import { cn } from "@/lib/utils"
 import { createJob } from "@/lib/actions/jobs"
-import { JOB_TYPES, type JobFormData } from "@/lib/job"
-
-
-const JOB_CATEGORIES = [
-  "Engineering & Tech",
-  "Design & Creative",
-  "Marketing & Sales",
-  "Finance & Accounting",
-  "Operations & Support",
-  "Healthcare",
-  "Education",
-]
-
-const FREQUENCIES = ["per hour", "per day", "per month", "per year"]
+import {
+  JOB_CATEGORIES,
+  JOB_FREQUENCIES,
+  JOB_TYPES,
+  type JobFormData,
+} from "@/lib/job"
 
 const INITIAL_FORM: JobFormData = {
   title: "",
@@ -51,8 +44,6 @@ const INITIAL_FORM: JobFormData = {
   status: "Active",
   applicants: 0,
 }
-
-
 
 const REQUIRED_FIELDS: { key: keyof JobFormData; label: string }[] = [
   { key: "title", label: "Job Title" },
@@ -79,7 +70,6 @@ export default function NewJobPage() {
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    
     event.preventDefault()
 
     const missing = REQUIRED_FIELDS.filter(
@@ -97,8 +87,7 @@ export default function NewJobPage() {
     console.log("New job payload:", form)
 
     const result = await createJob(form)
-    
-    
+
     if (result.insertedId) {
       console.log("Job creation result:", result)
       toast.success("Job published!", {
@@ -106,7 +95,6 @@ export default function NewJobPage() {
       })
 
       router.push("/dashboard/recruiter/jobs")
-      
     }
   }
 
@@ -153,15 +141,13 @@ export default function NewJobPage() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Company Name" required>
-              <div className="relative">
-                <Building2 className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={form.company}
-                  onChange={(event) => update("company", event.target.value)}
-                  placeholder="e.g. HirePulse Network"
-                  className={cn(fieldClass, "pl-9")}
-                />
-              </div>
+              <IconInput
+                icon={Building2}
+                value={form.company}
+                onChange={(event) => update("company", event.target.value)}
+                placeholder="e.g. HirePulse Network"
+                className={fieldClass}
+              />
             </Field>
 
             <Field label="Job Category" required>
@@ -227,64 +213,56 @@ export default function NewJobPage() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Job Location" required hint="(location)">
-              <div className="relative">
-                <MapPin className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={form.location}
-                  onChange={(event) => update("location", event.target.value)}
-                  placeholder="e.g. New York, USA"
-                  className={cn(fieldClass, "pl-9")}
-                />
-              </div>
+              <IconInput
+                icon={MapPin}
+                value={form.location}
+                onChange={(event) => update("location", event.target.value)}
+                placeholder="e.g. New York, USA"
+                className={fieldClass}
+              />
             </Field>
 
             <Field label="Application Deadline" required hint="(deadline)">
-              <div className="relative">
-                <CalendarDays className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="date"
-                  value={form.deadline}
-                  onChange={(event) => update("deadline", event.target.value)}
-                  className={cn(fieldClass, "pl-9")}
-                />
-              </div>
+              <IconInput
+                icon={CalendarDays}
+                type="date"
+                value={form.deadline}
+                onChange={(event) => update("deadline", event.target.value)}
+                className={fieldClass}
+              />
             </Field>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
             <Field label="Min Salary / Rate">
-              <div className="relative">
-                <CircleDollarSign className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="number"
-                  min={0}
-                  value={form.minSalary}
-                  onChange={(event) => update("minSalary", event.target.value)}
-                  placeholder="25"
-                  className={cn(fieldClass, "pl-9")}
-                />
-              </div>
+              <IconInput
+                icon={CircleDollarSign}
+                type="number"
+                min={0}
+                value={form.minSalary}
+                onChange={(event) => update("minSalary", event.target.value)}
+                placeholder="25"
+                className={fieldClass}
+              />
             </Field>
 
             <Field label="Max Salary / Rate">
-              <div className="relative">
-                <CircleDollarSign className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  type="number"
-                  min={0}
-                  value={form.maxSalary}
-                  onChange={(event) => update("maxSalary", event.target.value)}
-                  placeholder="40"
-                  className={cn(fieldClass, "pl-9")}
-                />
-              </div>
+              <IconInput
+                icon={CircleDollarSign}
+                type="number"
+                min={0}
+                value={form.maxSalary}
+                onChange={(event) => update("maxSalary", event.target.value)}
+                placeholder="40"
+                className={fieldClass}
+              />
             </Field>
 
             <Field label="Frequency">
               <SelectInput
                 value={form.frequency}
                 onChange={(event) => update("frequency", event.target.value)}
-                options={FREQUENCIES}
+                options={JOB_FREQUENCIES}
                 placeholder="Select frequency"
               />
             </Field>

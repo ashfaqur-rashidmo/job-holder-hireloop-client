@@ -3,22 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 
-import {
-  Briefcase,
-  Code2,
-  GraduationCap,
-  HeartPulse,
-  MapPin,
-  Megaphone,
-  MoreVertical,
-  PenTool,
-  Pencil,
-  Plus,
-  Settings,
-  Users,
-  Wallet,
-  type LucideIcon,
-} from "lucide-react"
+import { MapPin, Plus, Users } from "lucide-react"
 
 import { toast } from "sonner"
 
@@ -33,64 +18,12 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-import type { JobFormData } from "@/lib/job"
-import { cn } from "@/lib/utils"
+import { JobActions } from "@/app/component/JobActions"
+import { JobIdentity } from "@/app/component/JobIdentity"
+import { JobStatusBadge } from "@/app/component/JobStatusBadge"
 import { getJobs } from "@/lib/api/jobs"
-import { DeleteJobDialog } from "@/app/component/DeleteJobDialog"
-
-// Types
-type JobStatus = "Active" | "Expired"
-
-export type JobPost = JobFormData & {
-  _id: string
-  postedAgo: string
-}
-
-// Category icons and styles
-const CATEGORY_META: Record<string, { icon: LucideIcon; className: string }> = {
-  "Engineering & Tech": {
-    icon: Code2,
-    className: "text-sky-500 dark:text-sky-400",
-  },
-
-  "Design & Creative": {
-    icon: PenTool,
-    className: "text-orange-500 dark:text-orange-400",
-  },
-
-  "Marketing & Sales": {
-    icon: Megaphone,
-    className: "text-fuchsia-500 dark:text-fuchsia-400",
-  },
-
-  "Finance & Accounting": {
-    icon: Wallet,
-    className: "text-emerald-500 dark:text-emerald-400",
-  },
-
-  "Operations & Support": {
-    icon: Settings,
-    className: "text-indigo-500 dark:text-indigo-400",
-  },
-
-  Healthcare: {
-    icon: HeartPulse,
-    className: "text-rose-500 dark:text-rose-400",
-  },
-
-  Education: {
-    icon: GraduationCap,
-    className: "text-amber-500 dark:text-amber-400",
-  },
-}
-
-const DEFAULT_CATEGORY_META: {
-  icon: LucideIcon
-  className: string
-} = {
-  icon: Briefcase,
-  className: "text-indigo-500 dark:text-indigo-400",
-}
+import { getJobStatus, type JobPost } from "@/lib/job"
+import { cn } from "@/lib/utils"
 
 const CURRENCY = "€"
 
@@ -101,19 +34,13 @@ const FREQUENCY_UNIT: Record<string, string> = {
   "per year": "yr",
 }
 
+// Table styles
+const tableHeadClass =
+  "px-2.5 py-3 text-[11px] font-semibold tracking-wider uppercase"
+
+const tableCellClass = "px-2.5 py-4"
+
 // Helper functions
-function getCategoryMeta(category: string) {
-  return CATEGORY_META[category] ?? DEFAULT_CATEGORY_META
-}
-
-function getStatus(job: JobPost) {
-  if (!job.deadline) return "Active"
-
-  const deadline = new Date(`${job.deadline}T23:59:59`)
-
-  return deadline < new Date() ? "Expired" : "Active"
-}
-
 function formatCompensation(job: JobPost) {
   if (!job.minSalary && !job.maxSalary) {
     return "—"
@@ -168,7 +95,7 @@ export default function RecruiterJobsPage() {
 
         const data = await getJobs()
 
-        setJobs(data as JobPost[])
+        setJobs(data)
 
         console.log("Jobs data:", data)
       } catch (error) {
@@ -270,140 +197,116 @@ export default function RecruiterJobsPage() {
             <Table className="min-w-[900px]">
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent">
-                  <TableHead className="px-2.5 py-3 text-[11px] font-semibold tracking-wider uppercase">
+                  <TableHead className={tableHeadClass}>
                     Job Title &amp; Dept
                   </TableHead>
 
-                  <TableHead className="px-2.5 py-3 text-[11px] font-semibold tracking-wider uppercase">
+                  <TableHead className={tableHeadClass}>
                     Company &amp; Location
                   </TableHead>
 
-                  <TableHead className="hidden px-2.5 py-3 text-[11px] font-semibold tracking-wider uppercase min-[1440px]:table-cell">
+                  <TableHead
+                    className={cn(
+                      tableHeadClass,
+                      "hidden min-[1440px]:table-cell"
+                    )}
+                  >
                     Type
                   </TableHead>
 
-                  <TableHead className="px-2.5 py-3 text-[11px] font-semibold tracking-wider uppercase">
-                    Compensation
-                  </TableHead>
+                  <TableHead className={tableHeadClass}>Compensation</TableHead>
 
-                  <TableHead className="hidden px-2.5 py-3 text-[11px] font-semibold tracking-wider uppercase min-[1440px]:table-cell">
+                  <TableHead
+                    className={cn(
+                      tableHeadClass,
+                      "hidden min-[1440px]:table-cell"
+                    )}
+                  >
                     Applicants
                   </TableHead>
 
-                  <TableHead className="px-2.5 py-3 text-[11px] font-semibold tracking-wider uppercase">
-                    Status
-                  </TableHead>
+                  <TableHead className={tableHeadClass}>Status</TableHead>
 
-                  <TableHead className="px-2.5 py-3 text-[11px] font-semibold tracking-wider uppercase">
-                    Deadline
-                  </TableHead>
+                  <TableHead className={tableHeadClass}>Deadline</TableHead>
 
-                  <TableHead className="px-2.5 py-3 text-right text-[11px] font-semibold tracking-wider uppercase">
+                  <TableHead className={cn(tableHeadClass, "text-right")}>
                     Actions
                   </TableHead>
                 </TableRow>
               </TableHeader>
 
               <TableBody>
-                {jobs.map((job) => {
-                  const meta = getCategoryMeta(job.category)
-                  const CategoryIcon = meta.icon
+                {jobs.map((job) => (
+                  <TableRow key={job._id} className="border-border/60">
+                    <TableCell className={tableCellClass}>
+                      <JobIdentity
+                        job={job}
+                        titleClassName="max-w-[190px] truncate text-sm font-medium"
+                      />
+                    </TableCell>
 
-                  return (
-                    <TableRow key={job._id} className="border-border/60">
-                      <TableCell className="px-2.5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={cn(
-                              "flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/60",
-                              meta.className
-                            )}
-                          >
-                            <CategoryIcon className="size-4" />
-                          </div>
+                    <TableCell className={tableCellClass}>
+                      <p className="text-sm">{job.company}</p>
 
-                          <div className="min-w-0">
-                            <p className="max-w-[190px] truncate text-sm font-medium">
-                              {job.title}
-                            </p>
+                      <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                        <MapPin className="size-3 shrink-0" />
 
-                            <p className={cn("text-xs", meta.className)}>
-                              {job.category}
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="px-2.5 py-4">
-                        <p className="text-sm">{job.company}</p>
-
-                        <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                          <MapPin className="size-3 shrink-0" />
-
-                          <span className="max-w-[180px] truncate">
-                            {locationLabel(job)}
-                          </span>
-                        </p>
-                      </TableCell>
-
-                      <TableCell className="hidden px-2.5 py-4 min-[1440px]:table-cell">
-                        <span className="inline-flex rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
-                          {job.jobType}
+                        <span className="max-w-[180px] truncate">
+                          {locationLabel(job)}
                         </span>
-                      </TableCell>
+                      </p>
+                    </TableCell>
 
-                      <TableCell className="px-2.5 py-4">
-                        <span className="text-sm">
-                          {formatCompensation(job)}
-                        </span>
-                      </TableCell>
+                    <TableCell
+                      className={cn(
+                        tableCellClass,
+                        "hidden min-[1440px]:table-cell"
+                      )}
+                    >
+                      <span className="inline-flex rounded-md bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
+                        {job.jobType}
+                      </span>
+                    </TableCell>
 
-                      <TableCell className="hidden px-2.5 py-4 min-[1440px]:table-cell">
-                        <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                          <Users className="size-4" />
-                          {job.applicants} Candidates
-                        </span>
-                      </TableCell>
+                    <TableCell className={tableCellClass}>
+                      <span className="text-sm">{formatCompensation(job)}</span>
+                    </TableCell>
 
-                      <TableCell className="px-2.5 py-4">
-                        <StatusBadge status={getStatus(job)} />
-                      </TableCell>
+                    <TableCell
+                      className={cn(
+                        tableCellClass,
+                        "hidden min-[1440px]:table-cell"
+                      )}
+                    >
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Users className="size-4" />
+                        {job.applicants} Candidates
+                      </span>
+                    </TableCell>
 
-                      <TableCell className="px-2.5 py-4">
-                        <p className="text-sm">{formatDate(job.deadline)}</p>
+                    <TableCell className={tableCellClass}>
+                      <JobStatusBadge status={getJobStatus(job)} />
+                    </TableCell>
 
-                        <p className="text-xs text-muted-foreground">
-                          {job.postedAgo}
-                        </p>
-                      </TableCell>
+                    <TableCell className={tableCellClass}>
+                      <p className="text-sm">{formatDate(job.deadline)}</p>
 
-                      <TableCell className="px-2.5 py-4">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 gap-1.5 border-indigo-500/30 bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 dark:text-indigo-300"
-                            onClick={() => handleUpdate(job)}
-                          >
-                            <Pencil className="size-3.5" />
-                            Update
-                          </Button>
+                      <p className="text-xs text-muted-foreground">
+                        {job.postedAgo}
+                      </p>
+                    </TableCell>
 
-                          <DeleteJobDialog job={job} onDeleted={handleDelete} />
-
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            aria-label={`More actions for ${job.title}`}
-                            onClick={() => handleMore(job)}
-                          >
-                            <MoreVertical className="size-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                    <TableCell className={tableCellClass}>
+                      <JobActions
+                        job={job}
+                        onUpdate={handleUpdate}
+                        onDelete={handleDelete}
+                        onMore={handleMore}
+                        className="justify-end gap-1"
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>
@@ -426,31 +329,6 @@ export default function RecruiterJobsPage() {
   )
 }
 
-// Status badge
-function StatusBadge({ status }: { status: JobStatus }) {
-  const isActive = status === "Active"
-
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
-        isActive
-          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-          : "bg-muted text-muted-foreground"
-      )}
-    >
-      <span
-        className={cn(
-          "size-1.5 rounded-full",
-          isActive ? "bg-emerald-500" : "bg-muted-foreground"
-        )}
-      />
-
-      {status}
-    </span>
-  )
-}
-
 // Mobile / tablet job card
 function JobCard({
   job,
@@ -463,30 +341,16 @@ function JobCard({
   onDelete: (id: string) => void
   onMore: (job: JobPost) => void
 }) {
-  const meta = getCategoryMeta(job.category)
-  const CategoryIcon = meta.icon
-
   return (
     <div className="rounded-xl border border-border/60 bg-card p-4">
       <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <div
-            className={cn(
-              "flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/60",
-              meta.className
-            )}
-          >
-            <CategoryIcon className="size-4" />
-          </div>
+        <JobIdentity
+          job={job}
+          className="min-w-0"
+          titleClassName="truncate text-sm font-semibold"
+        />
 
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">{job.title}</p>
-
-            <p className={cn("text-xs", meta.className)}>{job.category}</p>
-          </div>
-        </div>
-
-        <StatusBadge status={getStatus(job)} />
+        <JobStatusBadge status={getJobStatus(job)} />
       </div>
 
       <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
@@ -538,37 +402,14 @@ function JobCard({
         </div>
       </dl>
 
-      <div className="mt-4 flex items-center gap-2 border-t border-border/60 pt-3">
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 flex-1 gap-1.5 border-indigo-500/30 bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 dark:text-indigo-300"
-          onClick={() => onUpdate(job)}
-        >
-          <Pencil className="size-3.5" />
-          Update
-        </Button>
-
-        {/* <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label={`Delete ${job.title}`}
-          onClick={() => onDelete(job.id)}
-        >
-          <Trash2 className="size-4" />
-        </Button> */}
-
-        <DeleteJobDialog job={job} onDeleted={onDelete} />
-
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label={`More actions for ${job.title}`}
-          onClick={() => onMore(job)}
-        >
-          <MoreVertical className="size-4" />
-        </Button>
-      </div>
+      <JobActions
+        job={job}
+        onUpdate={onUpdate}
+        onDelete={onDelete}
+        onMore={onMore}
+        className="mt-4 border-t border-border/60 pt-3"
+        updateClassName="flex-1"
+      />
     </div>
   )
 }
