@@ -18,7 +18,7 @@ export function Navbar() {
   const { data: session } = useSession()
 
   const NAV_LINKS = [
-  { href: "/jobs", label: "Browse Jobs" },
+  { href: "/browse-jobs", label: "Browse Jobs" },
   { href: "/company", label: "Company" },
   { href: "/pricing", label: "Pricing" },
   { href: `/dashboard/${session?.user?.role || "seeker"}`, label: "Dashboard" },

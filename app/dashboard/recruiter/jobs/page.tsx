@@ -22,17 +22,8 @@ import { JobActions } from "@/app/component/JobActions"
 import { JobIdentity } from "@/app/component/JobIdentity"
 import { JobStatusBadge } from "@/app/component/JobStatusBadge"
 import { getJobs } from "@/lib/api/jobs"
-import { getJobStatus, type JobPost } from "@/lib/job"
+import { formatJobSalary, getJobStatus, type JobPost } from "@/lib/job"
 import { cn } from "@/lib/utils"
-
-const CURRENCY = "€"
-
-const FREQUENCY_UNIT: Record<string, string> = {
-  "per hour": "hr",
-  "per day": "day",
-  "per month": "mo",
-  "per year": "yr",
-}
 
 // Table styles
 const tableHeadClass =
@@ -41,23 +32,6 @@ const tableHeadClass =
 const tableCellClass = "px-2.5 py-4"
 
 // Helper functions
-function formatCompensation(job: JobPost) {
-  if (!job.minSalary && !job.maxSalary) {
-    return "—"
-  }
-
-  const unit = FREQUENCY_UNIT[job.frequency] ?? ""
-  const suffix = job.frequency === "per year" ? "k" : ""
-
-  const min = job.minSalary ? `${CURRENCY}${job.minSalary}${suffix}` : ""
-
-  const max = job.maxSalary ? `${CURRENCY}${job.maxSalary}${suffix}` : ""
-
-  const range = [min, max].filter(Boolean).join(" - ")
-
-  return unit ? `${range} / ${unit}` : range
-}
-
 function formatDate(value: string) {
   if (!value) {
     return "—"
@@ -269,7 +243,7 @@ export default function RecruiterJobsPage() {
                     </TableCell>
 
                     <TableCell className={tableCellClass}>
-                      <span className="text-sm">{formatCompensation(job)}</span>
+                      <span className="text-sm">{formatJobSalary(job)}</span>
                     </TableCell>
 
                     <TableCell
@@ -381,7 +355,7 @@ function JobCard({
 
         <div>
           <dt className="text-muted-foreground">Compensation</dt>
-          <dd className="mt-0.5 text-sm">{formatCompensation(job)}</dd>
+          <dd className="mt-0.5 text-sm">{formatJobSalary(job)}</dd>
         </div>
 
         <div>

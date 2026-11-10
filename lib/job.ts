@@ -43,6 +43,35 @@ export type JobPost = JobFormData & {
   postedAgo: string
 }
 
+const CURRENCY = "€"
+
+const FREQUENCY_UNIT: Record<string, string> = {
+  "per hour": "hr",
+  "per day": "day",
+  "per month": "mo",
+  "per year": "yr",
+}
+
+export function formatJobSalary(
+  job: Pick<JobPost, "minSalary" | "maxSalary" | "frequency">,
+  options: { includePeriod?: boolean } = {}
+) {
+  if (!job.minSalary && !job.maxSalary) {
+    return "—"
+  }
+
+  const unit = FREQUENCY_UNIT[job.frequency] ?? ""
+  const suffix = job.frequency === "per year" ? "k" : ""
+
+  const min = job.minSalary ? `${CURRENCY}${job.minSalary}${suffix}` : ""
+  const max = job.maxSalary ? `${CURRENCY}${job.maxSalary}${suffix}` : ""
+
+  const range = [min, max].filter(Boolean).join(" - ")
+  const includePeriod = options.includePeriod ?? true
+
+  return includePeriod && unit ? `${range} / ${unit}` : range
+}
+
 export function getJobStatus(job: Pick<JobFormData, "deadline">): JobStatus {
   if (!job.deadline) return "Active"
 
