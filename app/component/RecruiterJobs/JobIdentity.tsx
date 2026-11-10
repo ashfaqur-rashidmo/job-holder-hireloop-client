@@ -1,7 +1,7 @@
 import {
   getCategoryMeta,
   JobCategoryIcon,
-} from "@/app/component/JobCategoryIcon"
+} from "@/app/component/RecruiterJobs/JobCategoryIcon"
 import type { JobPost } from "@/lib/job"
 import { cn } from "@/lib/utils"
 

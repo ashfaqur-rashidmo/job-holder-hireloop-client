@@ -1,8 +1,9 @@
 import { Bookmark, Clock, MapPin, Wallet, type LucideIcon } from "lucide-react"
 
-import { JobCategoryIcon } from "@/app/component/JobCategoryIcon"
+import { JobCategoryIcon } from "@/app/component/RecruiterJobs/JobCategoryIcon"
 import { formatJobSalary, type JobPost } from "@/lib/job"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 type JobCardProps = {
   job: JobPost
@@ -13,7 +14,10 @@ export function JobCard({ job }: JobCardProps) {
   const salary = formatJobSalary(job, { includePeriod: false })
   const meta = [job.company, location].filter(Boolean).join(" • ")
 
+ 
+
   return (
+    <Link href={`/browse-jobs/${job._id}`} className="no-underline">
     <article className="rounded-xl border border-white/10 bg-[#101010] p-4 transition-colors hover:border-white/20">
       <div className="flex gap-4">
         <JobCategoryIcon
@@ -55,6 +59,7 @@ export function JobCard({ job }: JobCardProps) {
         </div>
       </div>
     </article>
+    </Link>
   )
 }
 

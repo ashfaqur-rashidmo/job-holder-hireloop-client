@@ -11,12 +11,13 @@ type BrowseJobsSearchParams = Promise<
 >
 
 export default async function BrowseJobsPage({
-  searchParams,
+  searchParams
 }: {
   searchParams: BrowseJobsSearchParams
 }) {
   const params = await searchParams
   const query = new URLSearchParams()
+
 
   for (const [key, value] of Object.entries(params)) {
     if (typeof value === "string") {

@@ -36,6 +36,8 @@ export type JobFormData = {
   qualifications: string
   applicants: number
   status: JobStatus
+  description?: string
+  benefits?: string
 }
 
 export type JobPost = JobFormData & {

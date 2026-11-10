@@ -18,9 +18,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-import { JobActions } from "@/app/component/JobActions"
-import { JobIdentity } from "@/app/component/JobIdentity"
-import { JobStatusBadge } from "@/app/component/JobStatusBadge"
+import { JobActions } from "@/app/component/RecruiterJobs/JobActions"
+import { JobIdentity } from "@/app/component/RecruiterJobs/JobIdentity"
+import { JobStatusBadge } from "@/app/component/RecruiterJobs/JobStatusBadge"
 import { getJobs } from "@/lib/api/jobs"
 import { formatJobSalary, getJobStatus, type JobPost } from "@/lib/job"
 import { cn } from "@/lib/utils"

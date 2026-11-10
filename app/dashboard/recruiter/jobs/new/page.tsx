@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { IconInput } from "@/app/component/IconInput"
+import { IconInput } from "@/app/component/RecruiterDashboard/IconInput"
 import { cn } from "@/lib/utils"
 import { createJob } from "@/lib/actions/jobs"
 import {

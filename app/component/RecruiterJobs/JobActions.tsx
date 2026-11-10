@@ -1,6 +1,6 @@
 import { MoreVertical, Pencil } from "lucide-react"
 
-import { DeleteJobDialog } from "@/app/component/DeleteJobDialog"
+import { DeleteJobDialog } from "@/app/component/RecruiterDashboard/DeleteJobDialog"
 import { Button } from "@/components/ui/button"
 import type { JobPost } from "@/lib/job"
 import { cn } from "@/lib/utils"

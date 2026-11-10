@@ -7,7 +7,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { DashboardSidebar } from "../component/DashboardSidebar"
+import { DashboardSidebar } from "../component/RecruiterDashboard/DashboardSidebar"
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
