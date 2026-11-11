@@ -2,29 +2,28 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
-import { cache } from "react"
 
 import { getJob, getJobs } from "@/lib/api/jobs"
 import { getJobStatus } from "@/lib/job"
 
-import { JobCard } from "../components/JobCard"
-import { JobDetailsHeader } from "../../component/BrowseJobs/JobDetailsHeader"
+import { JobCard } from "../../component/BrowseJobs/JobCard"
+
 import { getJobDescription } from "../../../lib/jobDetailsData/job-details-data"
-import { JobDetailsStats } from "@/app/component/BrowseJobs/JobDetailsStats"
-import { JobDescriptionSections } from "@/app/component/BrowseJobs/JobDescriptionSections"
-import { CompanyOverview } from "@/app/component/BrowseJobs/CompanyOverview"
+import { JobDetailsStats } from "@/app/component/Job-Details/JobDetailsStats"
+import { JobDescriptionSections } from "@/app/component/Job-Details/JobDescriptionSections"
+import { CompanyOverview } from "@/app/component/Job-Details/CompanyOverview"
+import { JobDetailsHeader } from "@/app/component/Job-Details/JobDetailsHeader"
 
 type JobDetailsPageProps = {
   params: Promise<{ id: string }>
 }
 
-const getJobById = cache(getJob)
 
 export async function generateMetadata({
   params,
 }: JobDetailsPageProps): Promise<Metadata> {
   const { id } = await params
-  const job = await getJobById(id)
+  const job = await getJob(id)
 
   if (!job) {
     return { title: "Job not found" }
@@ -38,7 +37,7 @@ export async function generateMetadata({
 
 export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
   const { id } = await params
-  const job = await getJobById(id)
+  const job = await getJob(id)
 
   if (!job) {
     notFound()
@@ -79,7 +78,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
               </div>
 
               <Link
-                href={`/browse-jobs?category=${encodeURIComponent(job.category)}`}
+                href={`/browse-jobs?category=${(job.category)}`}
                 className="inline-flex items-center gap-1.5 text-sm text-[#A0A0AB] transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none"
               >
                 View all

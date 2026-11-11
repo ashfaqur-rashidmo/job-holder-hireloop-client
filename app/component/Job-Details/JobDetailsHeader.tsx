@@ -3,7 +3,7 @@ import { ShieldCheck } from "lucide-react"
 import { JobCategoryIcon } from "@/app/component/RecruiterJobs/JobCategoryIcon"
 import type { JobPost, JobStatus } from "@/lib/job"
 
-import { JobDetailsActions } from "./JobDetailsActions"
+import { JobDetailsActions } from "../Job-Details/JobDetailsActions"
 
 type JobDetailsHeaderProps = {
   job: JobPost
@@ -38,7 +38,7 @@ export function JobDetailsHeader({ job, status }: JobDetailsHeaderProps) {
         </div>
       </div>
 
-      <JobDetailsActions jobTitle={job.title} expired={status === "Expired"} />
+      <JobDetailsActions job={job} jobTitle={job.title} expired={status === "Expired"} />
     </header>
   )
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Mail, Lock, User } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,12 +19,18 @@ export default function SignInPage() {
   const [error, setError] = useState("")
   const router = useRouter()
   const { data: session, isPending } = authClient.useSession()
+  const searchParams = useSearchParams()
+  const redirectParam = searchParams.get("redirectTo") || "/"
+  const redirectTo =
+    redirectParam.startsWith("/") && !redirectParam.startsWith("//")
+      ? redirectParam
+      : "/"
 
   useEffect(() => {
     if (!isPending && session) {
-      router.push("/")
+      router.push(redirectTo)
     }
-  }, [session, isPending, router])
+  }, [session, isPending, redirectTo, router])
 
   if (isPending) {
     return null
@@ -48,7 +54,7 @@ export default function SignInPage() {
       await authClient.signIn.email({
         email: collected.email,
         password: collected.password,
-        callbackURL: "/",
+        callbackURL: redirectTo,
       })
 
       toast.success("Signed in successfully")

@@ -1,10 +1,10 @@
 import { getJobs } from "@/lib/api/jobs"
 import { JOB_CATEGORIES, JOB_TYPES, type JobType } from "@/lib/job"
 
-import { JobCard } from "./components/JobCard"
-import { JobFilters } from "./components/JobFilters"
-import { JobSearchBar } from "./components/JobSearchBar"
-import { SortSelect } from "./components/SortSelect"
+import { JobCard } from "../component/BrowseJobs/JobCard"
+import { JobFilters } from "../component/BrowseJobs/JobFilters"
+import { JobSearchBar } from "../component/BrowseJobs/JobSearchBar"
+import { SortSelect } from "../component/BrowseJobs/SortSelect"
 
 type BrowseJobsSearchParams = Promise<
   Record<string, string | string[] | undefined>

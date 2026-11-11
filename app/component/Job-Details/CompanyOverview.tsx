@@ -12,7 +12,7 @@ type CompanyOverviewProps = {
 }
 
 export function CompanyOverview({ job }: CompanyOverviewProps) {
-  const companyJobsHref = `/browse-jobs?search=${encodeURIComponent(job.company)}`
+  const companyJobsHref = `/browse-jobs?search=${(job.company)}`
 
   return (
     <aside className="border border-white/[0.07] bg-[#141418] p-6">

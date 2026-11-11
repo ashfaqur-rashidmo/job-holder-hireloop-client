@@ -8,7 +8,7 @@ export const getJobs = async (query = ""): Promise<JobPost[]> => {
 }
 
 export const getJob = async (id: string): Promise<JobPost | null> => {
-  const res = await fetch(`${baseURL}/jobs/${encodeURIComponent(id)}`)
+  const res = await fetch(`${baseURL}/jobs/${(id)}`)
 
   if (!res.ok) {
     return null
