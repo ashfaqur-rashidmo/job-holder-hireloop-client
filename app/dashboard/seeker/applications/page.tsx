@@ -6,7 +6,8 @@ import { ApplicationsTable } from "@/app/component/SeekerApplications/Applicatio
 import { ExportPdfButton } from "@/app/component/SeekerApplications/ExportPdfButton"
 import { buttonVariants } from "@/components/ui/button"
 import { getApplications } from "@/lib/actions/applications"
-import { getApplicationStats } from "@/lib/application"
+import { getJobs } from "@/lib/api/jobs"
+import { getApplicationStats, withResolvedJobIds } from "@/lib/application"
 import { auth } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 import { headers } from "next/headers"
@@ -33,11 +34,17 @@ export default async function SeekerApplicationsPage({
     ? await getApplications(session.user.id)
     : []
 
+  // Fill missing jobId from real jobs so Details links work.
+  const needsJobIds = applications.some((application) => !application.jobId)
+  const resolvedApplications = needsJobIds
+    ? withResolvedJobIds(applications, await getJobs())
+    : applications
+
   const { tab } = await searchParams
   const activeTab: ApplicationsTab = tab === "archived" ? "archived" : "active"
 
-  const stats = getApplicationStats(applications)
-  const visibleApplications = applications.filter((application) =>
+  const stats = getApplicationStats(resolvedApplications)
+  const visibleApplications = resolvedApplications.filter((application) =>
     activeTab === "archived" ? application.archived : !application.archived
   )
 

@@ -85,6 +85,35 @@ export function buildApplicationInput(
   }
 }
 
+/**
+ * Some older application records were saved without `jobId`.
+ * Match them against real jobs (title + company) so the
+ * Details link can point to the job details page.
+ */
+export function withResolvedJobIds(
+  applications: JobApplication[],
+  jobs: Pick<JobPost, "_id" | "title" | "company">[]
+): JobApplication[] {
+  const jobIdByKey = new Map(
+    jobs.map((job) => [
+      `${(job.title ?? "").trim().toLowerCase()}::${(job.company ?? "").trim().toLowerCase()}`,
+      job._id,
+    ])
+  )
+
+  return applications.map((application) => {
+    if (application.jobId) {
+      return application
+    }
+
+    const jobId = jobIdByKey.get(
+      `${(application.jobTitle ?? "").trim().toLowerCase()}::${(application.companyName ?? "").trim().toLowerCase()}`
+    )
+
+    return jobId ? { ...application, jobId } : application
+  })
+}
+
 export function formatApplicationJobMeta(
   application: Pick<JobApplication, "jobType" | "workMode">
 ) {
