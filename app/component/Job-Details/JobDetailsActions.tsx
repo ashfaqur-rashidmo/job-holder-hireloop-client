@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -8,7 +9,10 @@ import { toast } from "sonner"
 import { useSession } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 import { JobPost } from "@/lib/job"
-import { applyForJob } from "@/lib/actions/applications"
+import {
+  applyForJob,
+  getApplicationCount,
+} from "@/lib/actions/applications"
 import {
   addSavedJob,
   isJobSaved,
@@ -31,34 +35,38 @@ export function JobDetailsActions({
 
   const [saved, setSaved] = React.useState(false)
   const [isTogglingSaved, setIsTogglingSaved] = React.useState(false)
+  const [isApplying, setIsApplying] = React.useState(false)
 
   const { data: session, isPending: isSessionPending } = useSession()
-  const [isApplying, setIsApplying] = React.useState(false)
   const user = session?.user
 
-  // Restore the saved state for signed-in users.
+  // Restore saved state for signed-in users.
   React.useEffect(() => {
     if (!user) {
+      setSaved(false)
       return
     }
 
     let cancelled = false
 
-    isJobSaved(user.id, job._id).then((exists) => {
-      if (!cancelled) {
-        setSaved(exists)
-      }
-    })
+    isJobSaved(user.id, job._id)
+      .then((exists) => {
+        if (!cancelled) {
+          setSaved(exists)
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to check saved job:", error)
+      })
 
     return () => {
       cancelled = true
     }
-  }, [user, job._id])
+  }, [user?.id, job._id])
 
+  // Save or remove a job.
   const handleToggleSaved = async () => {
-    if (isTogglingSaved) {
-      return
-    }
+    if (isTogglingSaved) return
 
     if (!user) {
       router.push(`/sign-in?redirectTo=/browse-jobs/${job._id}`)
@@ -91,23 +99,24 @@ export function JobDetailsActions({
         }
 
         setSaved(true)
+
         toast.success(
           result.alreadySaved
             ? "Job is already in your saved jobs"
             : "Job saved"
         )
       }
-    } catch {
+    } catch (error) {
+      console.error("Saved job error:", error)
       toast.error("Something went wrong while updating saved jobs.")
     } finally {
       setIsTogglingSaved(false)
     }
   }
 
+  // Apply for a job.
   const handleApplyNow = async () => {
-    if (expired || isApplying) {
-      return
-    }
+    if (expired || isApplying || isSessionPending) return
 
     if (!user) {
       router.push(`/sign-in?redirectTo=/browse-jobs/${job._id}`)
@@ -122,11 +131,24 @@ export function JobDetailsActions({
     setIsApplying(true)
 
     try {
+      // Check the user's application count.
+      const applicationsCount = await getApplicationCount(user.id)
+
+
+      // Free users can apply for up to 10 jobs.
+      if (applicationsCount >= 10) {
+        router.push("/payment")
+        return
+      }
+
+      // Build application data.
       const application = buildApplicationInput(job, {
         id: user.id,
         email: user.email,
         name: user.name,
       })
+
+      // Submit application.
       const result = await applyForJob(application)
 
       if (!result.success) {
@@ -135,9 +157,12 @@ export function JobDetailsActions({
       }
 
       toast.success(result.message)
+
+      // Navigate to My Applications.
       router.push("/dashboard/seeker/applications")
-    } catch {
-      toast.error("Something went wrong while submitting your application.")
+    } catch (error) {
+      console.error("Apply for job error:", error)
+      toast.error("Something went wrong while applying for this job.")
     } finally {
       setIsApplying(false)
     }
@@ -148,7 +173,9 @@ export function JobDetailsActions({
       <button
         type="button"
         aria-label={
-          saved ? `Remove ${jobTitle} from saved jobs` : `Save ${jobTitle}`
+          saved
+            ? `Remove ${jobTitle} from saved jobs`
+            : `Save ${jobTitle}`
         }
         aria-pressed={saved}
         onClick={handleToggleSaved}
@@ -170,6 +197,7 @@ export function JobDetailsActions({
         className="inline-flex h-12 items-center justify-center gap-2 bg-[#FAFAFA] px-7 text-base font-medium text-[#0B0B0C] transition-colors hover:bg-white focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40"
       >
         {isApplying && <Loader2 className="size-4 animate-spin" />}
+
         {expired
           ? "Applications Closed"
           : isApplying

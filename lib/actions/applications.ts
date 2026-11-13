@@ -66,7 +66,7 @@ export async function getApplications(
   applicantId: string
 ): Promise<JobApplication[]> {
   const response = await fetch(
-    `${BASE_URL}/applications?applicantId=${encodeURIComponent(applicantId)}`,
+    `${BASE_URL}/applications?applicantId=${(applicantId)}`,
     { cache: "no-store" }
   )
 
@@ -76,4 +76,19 @@ export async function getApplications(
 
   const data = (await response.json()) as JobApplication[]
   return data
+}
+
+
+export async function getApplicationCount(applicantId: string): Promise<number> {
+  const response = await fetch(
+    `${BASE_URL}/applications/count?applicantId=${(applicantId)}`,
+    { cache: "no-store" }
+  )
+
+  if (!response.ok) {
+    throw new Error("Failed to load application count.")
+  }
+
+  const data = (await response.json()) as { count: number }
+  return data.count
 }
