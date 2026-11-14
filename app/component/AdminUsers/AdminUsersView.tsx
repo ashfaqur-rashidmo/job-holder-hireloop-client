@@ -5,6 +5,7 @@ import { Search } from "lucide-react"
 import { toast } from "sonner"
 
 import { Input } from "@/components/ui/input"
+import { UpdateUserRole } from "@/lib/api/users"
 import {
   USER_ROLES,
   USER_ROLE_LABELS,
@@ -19,19 +20,42 @@ type AdminUsersViewProps = {
   users: PlatformUser[]
 }
 
-export function AdminUsersView({ users }: AdminUsersViewProps) {
+export function AdminUsersView({ users: initialUsers }: AdminUsersViewProps) {
+  // Local copy of the list so role changes show up without a reload.
+  const [users, setUsers] = React.useState(initialUsers)
   const [search, setSearch] = React.useState("")
   const [roleFilter, setRoleFilter] = React.useState<UserRole | "all">("all")
+  const [updatingId, setUpdatingId] = React.useState<string | null>(null)
 
-  // The actual role update is not implemented yet — this handler is the
-  // hook the real update logic will use (e.g. better-auth admin setRole).
-  function handleRoleChange(user: PlatformUser, role: UserRole) {
-    if (role === user.role) return
+  // The role update: calls the API, updates the local list, and shows
+  // a toast on success or failure.
+  async function handleRoleChange(user: PlatformUser, role: UserRole) {
+    if (role === user.role || updatingId) return
 
-    toast.info("Role update coming soon", {
-      description: `${user.name || user.email} → ${USER_ROLE_LABELS[role]}`,
-    })
-    console.log("Update role (not implemented):", user.id, user.email, role)
+    setUpdatingId(user.id)
+
+    try {
+      const result = await UpdateUserRole(user.id, role)
+
+      if (!result.success) {
+        toast.error(result.message)
+        return
+      }
+
+      setUsers((prevUsers) =>
+        prevUsers.map((prevUser) =>
+          prevUser.id === user.id ? { ...prevUser, role } : prevUser
+        )
+      )
+
+      toast.success("Role updated", {
+        description: `${user.name || user.email} → ${USER_ROLE_LABELS[role]}`,
+      })
+    } catch {
+      toast.error("Failed to update the user role.")
+    } finally {
+      setUpdatingId(null)
+    }
   }
 
   // Filter by email/name (search) and by role.

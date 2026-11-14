@@ -1,5 +1,7 @@
-import { headers } from "next/headers"
-import { auth } from "../auth"
+import type { UserRole } from "@/lib/user"
+
+// Browser-safe user API helpers (no server-only imports here —
+// server-side user helpers live in lib/api/users.server.ts).
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"
 
@@ -22,20 +24,41 @@ export const isUserPremium = async (userId: string): Promise<boolean> => {
   }
 }
 
-
-
-
-export const getUsers = async () => {
-   const users = await auth.api.listUsers({
-    query: {
-      
-        sortBy: "name", // The field to sort by.
-        sortDirection: "desc", // The direction to sort by.
-       
+// Update a user's role (admin action). The backend returns a MongoDB
+// UpdateResult; we normalize it to a simple success shape.
+export const UpdateUserRole = async (
+  userId: string,
+  role: UserRole
+): Promise<{ success: boolean; message: string }> => {
+  const response = await fetch(`${BASE_URL}/users/${userId}/role`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
     },
-    // This endpoint requires session cookies.
-    headers: await headers(),
-});
+    body: JSON.stringify({ role }),
+  })
 
-  return users
+  const data = (await response.json().catch(() => null)) as {
+    matchedCount?: number
+    message?: string
+  } | null
+
+  if (!response.ok) {
+    return {
+      success: false,
+      message: data?.message || "Failed to update the user role.",
+    }
+  }
+
+  if (!data || data.matchedCount === 0) {
+    return {
+      success: false,
+      message: "User not found.",
+    }
+  }
+
+  return {
+    success: true,
+    message: "Role updated.",
+  }
 }

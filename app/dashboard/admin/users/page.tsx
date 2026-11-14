@@ -3,7 +3,7 @@ import Link from "next/link"
 
 import { AdminUsersView } from "@/app/component/AdminUsers/AdminUsersView"
 import { buttonVariants } from "@/components/ui/button"
-import { getUsers } from "@/lib/api/users"
+import { getUsers } from "@/lib/api/users.server"
 import { auth } from "@/lib/auth"
 import { USER_ROLES, type PlatformUser, type UserRole } from "@/lib/user"
 

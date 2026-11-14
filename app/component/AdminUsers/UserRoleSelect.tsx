@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils"
 
 /**
  * Compact role switcher shown on every user row.
- * Selecting a role calls onRoleChange — the parent decides what to do
- * (the actual update is not implemented yet).
+ * Presentational only — it reports the chosen role to the parent,
+ * which decides what to do (API call, toasts, state update).
  */
 export function UserRoleSelect({
   name,
