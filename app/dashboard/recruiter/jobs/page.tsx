@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import Link from "next/link"
-import {useState, useEffect} from "react"
+import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
 
 import { MapPin, Plus, Users } from "lucide-react"
 
@@ -99,11 +100,11 @@ export default function RecruiterJobsPage() {
     fetchJobs()
   }, [isSessionPending, sessionData])
 
-  // Update job
+  const router = useRouter()
+
+  // Update job → go to the edit page
   function handleUpdate(job: JobPost) {
-    toast.info("Update job post", {
-      description: job.title,
-    })
+    router.push(`/dashboard/recruiter/jobs/${job._id}/edit`)
   }
 
   // Delete job from frontend state after the API confirms it.
@@ -114,7 +115,7 @@ export default function RecruiterJobsPage() {
   // More actions
   function handleMore(job: JobPost) {
     toast.info("More actions", {
-      description: job.title
+      description: job.title,
     })
   }
 

@@ -1,0 +1,356 @@
+"use client"
+
+import * as React from "react"
+import {
+  ArrowRight,
+  Building2,
+  CalendarDays,
+  ChevronDown,
+  CircleDollarSign,
+  Globe2,
+  MapPin,
+} from "lucide-react"
+
+import { IconInput } from "@/app/component/RecruiterDashboard/IconInput"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
+import {
+  JOB_CATEGORIES,
+  JOB_FREQUENCIES,
+  JOB_TYPES,
+  type JobFormData,
+} from "@/lib/job"
+
+const fieldClass =
+  "h-10 rounded-lg border-border/60 bg-muted/30 text-sm shadow-none focus-visible:border-indigo-500/60 focus-visible:ring-indigo-500/30 dark:[color-scheme:dark]"
+
+const textareaClass =
+  "min-h-28 resize-y rounded-lg border-border/60 bg-muted/30 text-sm shadow-none focus-visible:border-indigo-500/60 focus-visible:ring-indigo-500/30"
+
+type JobFormProps = {
+  /** Current form values — the parent page owns the state. */
+  form: JobFormData
+  /** Called for every field change. */
+  onChange: <K extends keyof JobFormData>(key: K, value: JobFormData[K]) => void
+  /** Submit handler — the page validates and calls the API. */
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void
+  submitLabel: string
+  isSubmitting?: boolean
+}
+
+/**
+ * Shared job post form used by the create and edit pages.
+ * Presentational only — validation and submission stay in the pages.
+ */
+export function JobForm({
+  form,
+  onChange,
+  onSubmit,
+  submitLabel,
+  isSubmitting = false,
+}: JobFormProps) {
+  return (
+    <form onSubmit={onSubmit} className="mt-8 space-y-10">
+      {/* 1. Basic Information */}
+      <FormSection number={1} title="Basic Information">
+        <Field label="Job Title" required>
+          <Input
+            value={form.title}
+            onChange={(event) => onChange("title", event.target.value)}
+            placeholder="e.g. Frontend Developer"
+            className={fieldClass}
+          />
+        </Field>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Company Name" required>
+            <IconInput
+              icon={Building2}
+              value={form.company}
+              onChange={(event) => onChange("company", event.target.value)}
+              placeholder="e.g. HirePulse Network"
+              className={fieldClass}
+            />
+          </Field>
+
+          <Field label="Job Category" required>
+            <SelectInput
+              value={form.category}
+              onChange={(event) => onChange("category", event.target.value)}
+              options={JOB_CATEGORIES}
+              placeholder="Select a category"
+            />
+          </Field>
+        </div>
+
+        <Field label="Job Type" required>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {JOB_TYPES.map((type) => {
+              const selected = form.jobType === type
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => onChange("jobType", type)}
+                  className={cn(
+                    "h-10 rounded-lg border text-sm font-medium transition-colors",
+                    selected
+                      ? "border-indigo-500/60 bg-indigo-500/10 text-indigo-600 dark:text-indigo-300"
+                      : "border-border/60 bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                  )}
+                >
+                  {type}
+                </button>
+              )
+            })}
+          </div>
+        </Field>
+      </FormSection>
+
+      {/* 2. Location, Compensation & Timeline */}
+      <FormSection number={2} title="Location, Compensation & Timeline">
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-border/60 bg-muted/30 p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500 dark:text-indigo-400">
+              <Globe2 className="size-4" />
+            </div>
+            <div>
+              <p className="text-sm font-medium">
+                Remote Work Allowed{" "}
+                <span className="font-normal text-muted-foreground">
+                  (isRemote)
+                </span>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Enable worldwide or distributed candidate applications
+              </p>
+            </div>
+          </div>
+          <Switch
+            checked={form.isRemote}
+            onChange={(checked) => onChange("isRemote", checked)}
+            label="Remote work allowed"
+          />
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Job Location" required hint="(location)">
+            <IconInput
+              icon={MapPin}
+              value={form.location}
+              onChange={(event) => onChange("location", event.target.value)}
+              placeholder="e.g. New York, USA"
+              className={fieldClass}
+            />
+          </Field>
+
+          <Field label="Application Deadline" required hint="(deadline)">
+            <IconInput
+              icon={CalendarDays}
+              type="date"
+              value={form.deadline}
+              onChange={(event) => onChange("deadline", event.target.value)}
+              className={fieldClass}
+            />
+          </Field>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Field label="Min Salary / Rate">
+            <IconInput
+              icon={CircleDollarSign}
+              type="number"
+              min={0}
+              value={form.minSalary}
+              onChange={(event) => onChange("minSalary", event.target.value)}
+              placeholder="25"
+              className={fieldClass}
+            />
+          </Field>
+
+          <Field label="Max Salary / Rate">
+            <IconInput
+              icon={CircleDollarSign}
+              type="number"
+              min={0}
+              value={form.maxSalary}
+              onChange={(event) => onChange("maxSalary", event.target.value)}
+              placeholder="40"
+              className={fieldClass}
+            />
+          </Field>
+
+          <Field label="Frequency">
+            <SelectInput
+              value={form.frequency}
+              onChange={(event) =>
+                onChange(
+                  "frequency",
+                  event.target.value as JobFormData["frequency"]
+                )
+              }
+              options={JOB_FREQUENCIES}
+              placeholder="Select frequency"
+            />
+          </Field>
+        </div>
+      </FormSection>
+
+      {/* 3. Responsibilities & Requirements */}
+      <FormSection number={3} title="Responsibilities & Requirements">
+        <Field label="Key Responsibilities" required>
+          <Textarea
+            rows={5}
+            value={form.responsibilities}
+            onChange={(event) =>
+              onChange("responsibilities", event.target.value)
+            }
+            placeholder="Showcase your commitment to delivering exceptional user interfaces and digital experiences…"
+            className={textareaClass}
+          />
+        </Field>
+
+        <Field label="Qualifications & Requirements" required>
+          <Textarea
+            rows={5}
+            value={form.qualifications}
+            onChange={(event) => onChange("qualifications", event.target.value)}
+            placeholder="List the experience, skills and qualifications this role requires…"
+            className={textareaClass}
+          />
+        </Field>
+      </FormSection>
+
+      <Button
+        type="submit"
+        variant="gradient"
+        disabled={isSubmitting}
+        className="h-9 shrink-0 rounded-lg px-4"
+      >
+        {submitLabel}
+        <ArrowRight className="size-4" />
+      </Button>
+    </form>
+  )
+}
+
+function FormSection({
+  number,
+  title,
+  children,
+}: {
+  number: number
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <section className="border-t border-border/60 pt-8 first:border-t-0 first:pt-0">
+      <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">
+        <span className="size-1.5 rotate-45 bg-indigo-500" aria-hidden="true" />
+        {number}. {title}
+      </h2>
+      <div className="space-y-4">{children}</div>
+    </section>
+  )
+}
+
+function Field({
+  label,
+  required,
+  hint,
+  children,
+}: {
+  label: string
+  required?: boolean
+  hint?: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs text-foreground/80">
+        {label}
+        {hint && (
+          <span className="ml-1 font-normal text-muted-foreground">{hint}</span>
+        )}
+        {required && (
+          <span className="ml-0.5 text-indigo-500 dark:text-indigo-400">*</span>
+        )}
+      </Label>
+      {children}
+    </div>
+  )
+}
+
+function SelectInput({
+  value,
+  onChange,
+  options,
+  placeholder,
+}: {
+  value: string
+  onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void
+  options: readonly string[]
+  placeholder: string
+}) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={onChange}
+        className={cn(
+          "h-10 w-full appearance-none rounded-lg border border-border/60 bg-muted/30 px-3 pr-9 text-sm shadow-none outline-none focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-500/30",
+          value ? "text-foreground" : "text-muted-foreground"
+        )}
+      >
+        <option value="" disabled className="bg-background text-foreground">
+          {placeholder}
+        </option>
+        {options.map((option) => (
+          <option
+            key={option}
+            value={option}
+            className="bg-background text-foreground"
+          >
+            {option}
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground" />
+    </div>
+  )
+}
+
+function Switch({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean
+  onChange: (checked: boolean) => void
+  label: string
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      onClick={() => onChange(!checked)}
+      className={cn(
+        "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:outline-none",
+        checked ? "bg-indigo-500" : "bg-muted-foreground/30"
+      )}
+    >
+      <span
+        className={cn(
+          "inline-block size-5 rounded-full bg-white shadow-sm transition-transform",
+          checked ? "translate-x-[22px]" : "translate-x-0.5"
+        )}
+      />
+    </button>
+  )
+}

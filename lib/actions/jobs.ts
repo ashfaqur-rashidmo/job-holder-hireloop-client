@@ -15,6 +15,51 @@ export const createJob = async (
   return res.json()
 }
 
+export type UpdateJobResult = {
+  success: boolean
+  message: string
+}
+
+export const updateJob = async (
+  jobId: string,
+  data: JobFormData & { recruiterId?: string; recruiterEmail?: string }
+): Promise<UpdateJobResult> => {
+  const res = await fetch(`${baseURL}/jobs/${jobId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  })
+
+  // The API returns a MongoDB UpdateResult: { acknowledged, matchedCount, ... }.
+  // Normalize it so callers do not have to know the database shape.
+  const data_ = (await res.json().catch(() => null)) as {
+    acknowledged?: boolean
+    matchedCount?: number
+    message?: string
+  } | null
+
+  if (!res.ok) {
+    return {
+      success: false,
+      message: data_?.message || "Failed to update the job post.",
+    }
+  }
+
+  if (!data_?.acknowledged || data_.matchedCount === 0) {
+    return {
+      success: false,
+      message: "Job post not found.",
+    }
+  }
+
+  return {
+    success: true,
+    message: "Job post updated.",
+  }
+}
+
 export type DeleteJobResult = {
   success: boolean
   message: string

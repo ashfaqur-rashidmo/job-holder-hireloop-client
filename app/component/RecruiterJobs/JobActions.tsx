@@ -5,6 +5,7 @@ import { DeleteJobDialog } from "@/app/component/RecruiterDashboard/DeleteJobDia
 import { Button, buttonVariants } from "@/components/ui/button"
 import type { JobPost } from "@/lib/job"
 import { cn } from "@/lib/utils"
+import EditJobDetails from "../RecruiterDashboard/EditJobDetails"
 
 export function JobActions({
   job,
@@ -36,18 +37,21 @@ export function JobActions({
         Applications
       </Link>
 
-      <Button
-        variant="outline"
-        size="sm"
+      <Link
+        href={`/dashboard/recruiter/jobs/${job._id}/edit`}
         className={cn(
-          "h-8 gap-1.5 border-indigo-500/30 bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 dark:text-indigo-300",
+          buttonVariants({
+            variant: "outline",
+            size: "sm",
+            className:
+              "h-8 gap-1.5 border-indigo-500/30 bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 dark:text-indigo-300",
+          }),
           updateClassName
         )}
-        onClick={() => onUpdate(job)}
       >
         <Pencil className="size-3.5" />
-        Update
-      </Button>
+        <EditJobDetails />
+      </Link>
 
       <DeleteJobDialog job={job} onDeleted={onDelete} />
 
