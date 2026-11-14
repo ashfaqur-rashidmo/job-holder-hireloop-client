@@ -26,7 +26,7 @@ export const PLANS: Plan[] = [
     id: "pro",
     name: "Pro",
     role: "seeker",
-    price: 19,
+    price: 20,
     features: [
       "Apply to up to 30 jobs per month",
       "Unlimited saved jobs",
@@ -53,7 +53,7 @@ export const PLANS: Plan[] = [
     role: "recruiter",
     price: 0,
     features: [
-      "Up to 3 active job posts",
+      "Up to 5 active job posts",
       "Basic applicant management",
       "Standard listing visibility",
     ],
@@ -62,9 +62,9 @@ export const PLANS: Plan[] = [
     id: "growth",
     name: "Growth",
     role: "recruiter",
-    price: 49,
+    price: 50,
     features: [
-      "Up to 10 active job posts",
+      "Unlimited active job posts",
       "Applicant tracking",
       "Basic analytics",
       "Email support",

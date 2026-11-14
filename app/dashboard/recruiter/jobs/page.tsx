@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import {useState, useEffect} from "react"
 
 import { MapPin, Plus, Users } from "lucide-react"
 
@@ -22,6 +23,7 @@ import { JobActions } from "@/app/component/RecruiterJobs/JobActions"
 import { JobIdentity } from "@/app/component/RecruiterJobs/JobIdentity"
 import { JobStatusBadge } from "@/app/component/RecruiterJobs/JobStatusBadge"
 import { getJobs } from "@/lib/api/jobs"
+import { useSession } from "@/lib/auth-client"
 import { formatJobSalary, getJobStatus, type JobPost } from "@/lib/job"
 import { cn } from "@/lib/utils"
 
@@ -56,18 +58,30 @@ function locationLabel(job: JobPost) {
 
 // Main page
 export default function RecruiterJobsPage() {
-  const [jobs, setJobs] = React.useState<JobPost[]>([])
-  const [loading, setLoading] = React.useState(true)
-  const [error, setError] = React.useState("")
+  const [jobs, setJobs] = useState<JobPost[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
-  // Fetch jobs
-  React.useEffect(() => {
+  const { data: sessionData, isPending: isSessionPending } = useSession()
+
+  // Fetch only the signed-in recruiter's job posts
+  useEffect(() => {
+    // Wait for the session before fetching with the recruiter id
+    if (isSessionPending) return
+
     const fetchJobs = async () => {
       try {
         setLoading(true)
         setError("")
 
-        const data = await getJobs()
+        const user = sessionData?.user
+
+        if (!user) {
+          setError("Please sign in as a recruiter to see your job posts.")
+          return
+        }
+
+        const data = await getJobs(`recruiterId=${user.id}`)
 
         setJobs(data)
 
@@ -83,7 +97,7 @@ export default function RecruiterJobsPage() {
     }
 
     fetchJobs()
-  }, [])
+  }, [isSessionPending, sessionData])
 
   // Update job
   function handleUpdate(job: JobPost) {
@@ -100,7 +114,7 @@ export default function RecruiterJobsPage() {
   // More actions
   function handleMore(job: JobPost) {
     toast.info("More actions", {
-      description: job.title,
+      description: job.title
     })
   }
 

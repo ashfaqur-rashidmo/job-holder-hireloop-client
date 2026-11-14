@@ -1,5 +1,5 @@
 import type { ApplicationUser } from "@/lib/application"
-import type { JobPost } from "@/lib/job"
+import type { JobFrequency, JobPost } from "@/lib/job"
 
 export type SavedJob = {
   _id?: string
@@ -14,7 +14,7 @@ export type SavedJob = {
   location: string
   minSalary: string
   maxSalary: string
-  frequency: string
+  frequency: JobFrequency
   deadline: string
   savedAt: string
 }

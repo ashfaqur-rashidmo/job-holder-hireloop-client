@@ -2,7 +2,9 @@ import type { JobFormData } from "@/lib/job"
 
 const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"
 
-export const createJob = async (data: JobFormData) => {
+export const createJob = async (
+  data: JobFormData & { recruiterId?: string; recruiterEmail?: string }
+) => {
   const res = await fetch(`${baseURL}/jobs`, {
     method: "POST",
     headers: {

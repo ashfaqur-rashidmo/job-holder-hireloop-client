@@ -9,10 +9,20 @@ import { getPlan, getPlanRole, type Plan, type PlanRole } from "@/lib/plans"
 import { cn } from "@/lib/utils"
 
 type PaymentPageProps = {
-  searchParams: Promise<{ plan?: string; role?: string }>
+  searchParams: Promise<{ plan?: string; role?: string; canceled?: string }>
 }
 
-export default async function PaymentPage({ searchParams }: PaymentPageProps) {
+export default async function PaymentPage({ searchParams }: PaymentPageProps) 
+{
+   const { canceled } = await searchParams
+
+  if (canceled) {
+    console.log(
+      'Order canceled -- continue to shop around and check out when you\'re ready.'
+    )
+  }
+
+
   const { plan: planParam, role: roleParam } = await searchParams
   const role = getPlanRole(roleParam)
   const plan = getPlan(role, planParam)
@@ -43,6 +53,7 @@ export default async function PaymentPage({ searchParams }: PaymentPageProps) {
     </main>
   )
 }
+
 
 function FreePlanCard({ plan, role }: { plan: Plan; role: PlanRole }) {
   return (

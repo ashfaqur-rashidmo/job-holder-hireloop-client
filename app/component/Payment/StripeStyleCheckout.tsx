@@ -71,31 +71,18 @@ export function StripeStyleCheckout({
   const amountLabel =
     currency === "BDT" ? formatBdt(bdtAmount) : `$${usdAmount.toFixed(2)}`
 
-  const handlePay = () => {
+  const handlePay = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (!signedIn) {
+      event.preventDefault()
       router.push(`/sign-in?redirectTo=${encodeURIComponent(redirectTo)}`)
       return
     }
 
-    const cardDigits = cardNumber.replace(/\s/g, "")
-
-    if (
-      !/^\S+@\S+\.\S+$/.test(email) ||
-      cardDigits.length < 15 ||
-      !expiry.trim() ||
-      cvc.trim().length < 3 ||
-      !cardholder.trim()
-    ) {
-      toast.error("Please complete all payment fields.")
-      return
-    }
-
-    // TODO: Stripe checkout — create a Checkout Session on the server
-    // (e.g. POST /api/stripe/checkout-session) and redirect the user to
-    // the returned session.url. Stripe is not connected yet.
-    toast.info(
-      "Stripe checkout is coming soon — this button will redirect you to Stripe."
-    )
+    // Signed in → let the native form POST proceed: the server route
+    // (/api/checkout_sessions) creates the Stripe Checkout Session and
+    // responds with a 303 redirect to Stripe's hosted page, where the
+    // card details are actually collected. The fields above are display
+    // only — never send card data from our own site.
   }
 
   return (
@@ -334,13 +321,20 @@ export function StripeStyleCheckout({
             </span>
           </label>
 
-          <button
-            type="button"
-            onClick={handlePay}
-            className="h-11 w-full rounded-lg bg-[#2563eb] text-sm font-semibold text-white transition-colors hover:bg-[#1d55c9]"
+          <form
+            action={`/api/checkout_sessions?role=${role}&plan=${plan.id}`}
+            method="POST"
           >
-            Pay {amountLabel}
-          </button>
+            <section>
+              <button
+                type="submit"
+                onClick={handlePay}
+                className="h-11 w-full rounded-lg bg-[#2563eb] text-sm font-semibold text-white transition-colors hover:bg-[#1d55c9]"
+              >
+                Pay {amountLabel}
+              </button>
+            </section>
+          </form>
         </div>
       </div>
 

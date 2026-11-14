@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -9,16 +8,14 @@ import { toast } from "sonner"
 import { useSession } from "@/lib/auth-client"
 import { cn } from "@/lib/utils"
 import { JobPost } from "@/lib/job"
-import {
-  applyForJob,
-  getApplicationCount,
-} from "@/lib/actions/applications"
+import { applyForJob, getApplicationCount } from "@/lib/actions/applications"
 import {
   addSavedJob,
   isJobSaved,
   removeSavedJob,
 } from "@/lib/actions/saved-jobs"
 import { buildApplicationInput } from "@/lib/application"
+import { isUserPremium } from "@/lib/api/users"
 
 type JobDetailsActionsProps = {
   jobTitle: string
@@ -40,16 +37,15 @@ export function JobDetailsActions({
   const { data: session, isPending: isSessionPending } = useSession()
   const user = session?.user
 
-  // Restore saved state for signed-in users.
+  // Restore saved state for signed-in users (signed-out → false).
   React.useEffect(() => {
-    if (!user) {
-      setSaved(false)
-      return
-    }
-
     let cancelled = false
 
-    isJobSaved(user.id, job._id)
+    const savedPromise = user
+      ? isJobSaved(user.id, job._id)
+      : Promise.resolve(false)
+
+    savedPromise
       .then((exists) => {
         if (!cancelled) {
           setSaved(exists)
@@ -131,12 +127,18 @@ export function JobDetailsActions({
     setIsApplying(true)
 
     try {
+      // Premium seekers can apply unlimited; free users get 10 applications.
+      // The backend returns { result: { premium } } — isUserPremium
+      // normalizes it to a boolean.
+      const isPremium = await isUserPremium(user.id)
+
+      console.log("isPremium", isPremium)
+
       // Check the user's application count.
       const applicationsCount = await getApplicationCount(user.id)
 
-
       // Free users can apply for up to 10 jobs.
-      if (applicationsCount >= 10) {
+      if (!isPremium && applicationsCount >= 10) {
         router.push("/payment")
         return
       }
@@ -173,9 +175,7 @@ export function JobDetailsActions({
       <button
         type="button"
         aria-label={
-          saved
-            ? `Remove ${jobTitle} from saved jobs`
-            : `Save ${jobTitle}`
+          saved ? `Remove ${jobTitle} from saved jobs` : `Save ${jobTitle}`
         }
         aria-pressed={saved}
         onClick={handleToggleSaved}

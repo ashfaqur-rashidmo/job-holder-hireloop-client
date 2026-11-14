@@ -21,6 +21,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { IconInput } from "@/app/component/RecruiterDashboard/IconInput"
 import { cn } from "@/lib/utils"
 import { createJob } from "@/lib/actions/jobs"
+import { getRecruiterJobCount } from "@/lib/api/jobs"
+import { isUserPremium } from "@/lib/api/users"
+import { useSession } from "@/lib/auth-client"
 import {
   JOB_CATEGORIES,
   JOB_FREQUENCIES,
@@ -31,6 +34,8 @@ import {
 const INITIAL_FORM: JobFormData = {
   title: "",
   company: "",
+  companyId: "",
+  recruiterId: "",
   category: "",
   jobType: "Full-time",
   isRemote: false,
@@ -41,8 +46,8 @@ const INITIAL_FORM: JobFormData = {
   frequency: "per hour",
   responsibilities: "",
   qualifications: "",
-  status: "Active",
   applicants: 0,
+  status: "Active",
 }
 
 const REQUIRED_FIELDS: { key: keyof JobFormData; label: string }[] = [
@@ -61,9 +66,15 @@ const fieldClass =
 const textareaClass =
   "min-h-28 resize-y rounded-lg border-border/60 bg-muted/30 text-sm shadow-none focus-visible:border-indigo-500/60 focus-visible:ring-indigo-500/30"
 
+// Free plan: recruiters can keep up to 5 active job posts. Paying the
+// recruiter plan removes the cap (premium users are unlimited).
+const FREE_JOB_POST_LIMIT = 5
+
 export default function NewJobPage() {
   const [form, setForm] = React.useState<JobFormData>(INITIAL_FORM)
   const router = useRouter()
+  const { data: sessionData, isPending: isSessionPending } = useSession()
+ 
 
   function update<K extends keyof JobFormData>(key: K, value: JobFormData[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -71,6 +82,8 @@ export default function NewJobPage() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+
+    if (isSessionPending) return
 
     const missing = REQUIRED_FIELDS.filter(
       (field) => !String(form[field.key]).trim()
@@ -83,10 +96,35 @@ export default function NewJobPage() {
       return
     }
 
-    // Data is collected here — swap this for the API call when it exists.
-    console.log("New job payload:", form)
+    const user = sessionData?.user
 
-    const result = await createJob(form)
+    if (!user) {
+      toast.error("Please sign in as a recruiter to post a job.")
+      router.push("/sign-in?redirectTo=/dashboard/recruiter/jobs/new")
+      return
+    }
+
+    // Free plan: up to 5 active job posts — premium users are unlimited.
+    const isPremium = await isUserPremium(user.id)
+
+    if (!isPremium) {
+      const activeCount = await getRecruiterJobCount(user.id)
+
+      if (activeCount >= FREE_JOB_POST_LIMIT) {
+        toast.info("Free plan limit reached", {
+          description: `You already have ${FREE_JOB_POST_LIMIT} job posts. Upgrade to post more.`,
+        })
+        router.push("/payment?role=recruiter&plan=growth")
+        return
+      }
+    }
+
+    // Attach the posting recruiter so Manage Jobs stays per-user.
+    const result = await createJob({
+      ...form,
+      recruiterId: user.id,
+      recruiterEmail: user.email,
+    })
 
     if (result.insertedId) {
       console.log("Job creation result:", result)
@@ -261,7 +299,9 @@ export default function NewJobPage() {
             <Field label="Frequency">
               <SelectInput
                 value={form.frequency}
-                onChange={(event) => update("frequency", event.target.value)}
+                onChange={(event) =>
+                  update("frequency", event.target.value as JobFormData["frequency"])
+                }
                 options={JOB_FREQUENCIES}
                 placeholder="Select frequency"
               />
@@ -362,7 +402,7 @@ function SelectInput({
 }: {
   value: string
   onChange: (event: React.ChangeEvent<HTMLSelectElement>) => void
-  options: string[]
+  options: readonly string[]
   placeholder: string
 }) {
   return (
