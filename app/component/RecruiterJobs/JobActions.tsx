@@ -1,7 +1,8 @@
-import { MoreVertical, Pencil } from "lucide-react"
+import { MoreVertical, Pencil, Users } from "lucide-react"
+import Link from "next/link"
 
 import { DeleteJobDialog } from "@/app/component/RecruiterDashboard/DeleteJobDialog"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import type { JobPost } from "@/lib/job"
 import { cn } from "@/lib/utils"
 
@@ -22,6 +23,19 @@ export function JobActions({
 }) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
+      <Link
+        href={`/dashboard/recruiter/jobs/${job._id}/applications`}
+        className={buttonVariants({
+          variant: "outline",
+          size: "sm",
+          className: "h-8 gap-1.5",
+        })}
+        aria-label={`View applications for ${job.title}`}
+      >
+        <Users className="size-3.5" />
+        Applications
+      </Link>
+
       <Button
         variant="outline"
         size="sm"

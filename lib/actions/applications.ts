@@ -66,7 +66,7 @@ export async function getApplications(
   applicantId: string
 ): Promise<JobApplication[]> {
   const response = await fetch(
-    `${BASE_URL}/applications?applicantId=${(applicantId)}`,
+    `${BASE_URL}/applications?applicantId=${applicantId}`,
     { cache: "no-store" }
   )
 
@@ -78,10 +78,31 @@ export async function getApplications(
   return data
 }
 
-
-export async function getApplicationCount(applicantId: string): Promise<number> {
+/** Applications submitted for one job post (recruiter review view). */
+export async function getApplicationsByJob(
+  jobId: string
+): Promise<JobApplication[]> {
   const response = await fetch(
-    `${BASE_URL}/applications/count?applicantId=${(applicantId)}`,
+    `${BASE_URL}/applications?jobId=${encodeURIComponent(jobId)}`,
+    { cache: "no-store" }
+  )
+
+  if (!response.ok) {
+    throw new Error("Failed to load applications for this job.")
+  }
+
+  // Newest applications first.
+  const data = (await response.json()) as JobApplication[]
+  return data.sort((a, b) =>
+    (b.appliedAt ?? "").localeCompare(a.appliedAt ?? "")
+  )
+}
+
+export async function getApplicationCount(
+  applicantId: string
+): Promise<number> {
+  const response = await fetch(
+    `${BASE_URL}/applications/count?applicantId=${applicantId}`,
     { cache: "no-store" }
   )
 
