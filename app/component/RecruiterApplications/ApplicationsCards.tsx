@@ -1,6 +1,7 @@
 "use client"
 
 import { ExternalLink } from "lucide-react"
+import Link from "next/link"
 
 import { ApplicantAvatar } from "@/app/component/RecruiterApplications/ApplicantAvatar"
 import { ApplicationStatusBadge } from "@/app/component/SeekerApplications/ApplicationStatusBadge"
@@ -9,12 +10,15 @@ import { formatRelativeDate, type JobApplication } from "@/lib/application"
 type ApplicationsCardsProps = {
   applications: JobApplication[]
   className?: string
+  /** Adds a "Job" row (used by the recruiter-wide applications page). */
+  showJob?: boolean
 }
 
 /** Mobile / tablet cards for the applicants of one job post. */
 export function ApplicationsCards({
   applications,
   className,
+  showJob = false,
 }: ApplicationsCardsProps) {
   return (
     <div className={className}>
@@ -38,6 +42,21 @@ export function ApplicationsCards({
 
             <ApplicationStatusBadge status={application.status} />
           </div>
+
+          {showJob && (
+            <div className="mt-2 min-w-0 text-xs text-muted-foreground">
+              {application.jobId ? (
+                <Link
+                  href={`/dashboard/recruiter/jobs/${application.jobId}/applications`}
+                  className="truncate text-indigo-600 hover:underline dark:text-indigo-300"
+                >
+                  {application.jobTitle}
+                </Link>
+              ) : (
+                <span className="truncate">{application.jobTitle}</span>
+              )}
+            </div>
+          )}
 
           <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 border-t pt-3 text-xs">
             <div>

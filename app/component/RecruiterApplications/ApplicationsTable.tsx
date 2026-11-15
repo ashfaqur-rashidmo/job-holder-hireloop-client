@@ -1,6 +1,7 @@
 "use client"
 
 import { ExternalLink } from "lucide-react"
+import Link from "next/link"
 
 import { ApplicationStatusBadge } from "@/app/component/SeekerApplications/ApplicationStatusBadge"
 import { ApplicantAvatar } from "@/app/component/RecruiterApplications/ApplicantAvatar"
@@ -18,6 +19,8 @@ import { cn } from "@/lib/utils"
 type ApplicationsTableProps = {
   applications: JobApplication[]
   className?: string
+  /** Adds a "Job" column (used by the recruiter-wide applications page). */
+  showJob?: boolean
 }
 
 // Shared cell paddings so the columns stay aligned.
@@ -28,6 +31,7 @@ const cellClass = "px-4 text-[13px]"
 export function ApplicationsTable({
   applications,
   className,
+  showJob = false,
 }: ApplicationsTableProps) {
   return (
     <div
@@ -42,6 +46,10 @@ export function ApplicationsTable({
             <TableHead className={cn(headClass, "w-[26%] pl-6")}>
               Applicant
             </TableHead>
+
+            {showJob && (
+              <TableHead className={cn(headClass, "w-[18%]")}>Job</TableHead>
+            )}
 
             <TableHead className={cn(headClass, "w-[12%]")}>
               Work Mode
@@ -80,6 +88,24 @@ export function ApplicationsTable({
                   </div>
                 </div>
               </TableCell>
+
+              {showJob && (
+                <TableCell className={cellClass}>
+                  {application.jobId ? (
+                    <Link
+                      href={`/dashboard/recruiter/jobs/${application.jobId}/applications`}
+                      title={application.jobTitle}
+                      className="inline-block max-w-[180px] truncate text-indigo-600 hover:underline dark:text-indigo-300"
+                    >
+                      {application.jobTitle}
+                    </Link>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      {application.jobTitle || "—"}
+                    </span>
+                  )}
+                </TableCell>
+              )}
 
               <TableCell className={cn(cellClass, "text-muted-foreground")}>
                 {application.workMode}

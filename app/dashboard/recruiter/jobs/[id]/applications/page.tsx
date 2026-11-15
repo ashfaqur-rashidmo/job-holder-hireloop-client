@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { ArrowLeft, MapPin } from "lucide-react"
 
 import { ApplicationsCards } from "@/app/component/RecruiterApplications/ApplicationsCards"
@@ -14,7 +14,6 @@ import { getJob } from "@/lib/api/jobs"
 import { useSession } from "@/lib/auth-client"
 import { type JobApplication } from "@/lib/application"
 import { getJobStatus, type JobPost } from "@/lib/job"
-
 type ApplicationCounts = {
   total: number
   underReview: number
@@ -39,6 +38,7 @@ function countApplications(applications: JobApplication[]): ApplicationCounts {
 
 export default function JobApplicationsPage() {
   const { id } = useParams<{ id: string }>()
+  const router = useRouter()
 
   const [job, setJob] = React.useState<JobPost | null>(null)
   const [applications, setApplications] = React.useState<JobApplication[]>([])
@@ -75,10 +75,22 @@ export default function JobApplicationsPage() {
           return
         }
 
-        const applicationData = await getApplicationsByJob(id)
+        const result = await getApplicationsByJob(id)
+
+        // Backend said this user may not see these applications (not
+        // signed in, or the post belongs to another recruiter).
+        if (result.status === "unauthorized" || result.status === "forbidden") {
+          router.push("/unauthorized")
+          return
+        }
+
+        if (result.status !== "ok") {
+          setError("Failed to load applications.")
+          return
+        }
 
         setJob(jobData)
-        setApplications(applicationData)
+        setApplications(result.applications)
       } catch (fetchError) {
         console.error("Error loading applications:", fetchError)
         setError("Failed to load applications.")
@@ -88,7 +100,7 @@ export default function JobApplicationsPage() {
     }
 
     fetchData()
-  }, [id, isSessionPending, sessionData])
+  }, [id, isSessionPending, sessionData, router])
 
   // Loading state
   if (loading) {

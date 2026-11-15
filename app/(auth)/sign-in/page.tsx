@@ -1,5 +1,6 @@
 "use client"
 
+import { Suspense } from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Mail, Lock, User } from "lucide-react"
@@ -14,7 +15,17 @@ type SignInData = {
   password: string
 }
 
+// useSearchParams() below requires a Suspense boundary during static
+// prerendering — see https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
 export default function SignInPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignInForm />
+    </Suspense>
+  )
+}
+
+function SignInForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()

@@ -1,4 +1,7 @@
+"use server"
+
 import type { JobApplication, JobApplicationInput } from "@/lib/application"
+import { authFetch } from "@/lib/core/server"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"
 
@@ -55,6 +58,8 @@ export async function applyForJob(
     }
   }
 
+  
+
   return {
     success: true,
     message: "Application submitted successfully!",
@@ -79,23 +84,39 @@ export async function getApplications(
 }
 
 /** Applications submitted for one job post (recruiter review view). */
+export type ApplicationsByJobResult = {
+  status: "ok" | "unauthorized" | "forbidden" | "error"
+  applications: JobApplication[]
+}
+
 export async function getApplicationsByJob(
   jobId: string
-): Promise<JobApplication[]> {
-  const response = await fetch(
-    `${BASE_URL}/applications?jobId=${encodeURIComponent(jobId)}`,
-    { cache: "no-store" }
-  )
+): Promise<ApplicationsByJobResult> {
+  // Authenticated: the session token lets the backend (once it verifies
+  // it) scope this to the signed-in recruiter's own job posts.
+  const api = `${BASE_URL}/applications?jobId=${encodeURIComponent(jobId)}`
+  const response = await authFetch(api)
+
+  // 401: not signed in / expired session. 403: signed in, but this job
+  // post belongs to another recruiter (or is unowned legacy data).
+  if (response.status === 401) {
+    return { status: "unauthorized", applications: [] }
+  }
+
+  if (response.status === 403) {
+    return { status: "forbidden", applications: [] }
+  }
 
   if (!response.ok) {
-    throw new Error("Failed to load applications for this job.")
+    return { status: "error", applications: [] }
   }
 
   // Newest applications first.
   const data = (await response.json()) as JobApplication[]
-  return data.sort((a, b) =>
+  const applications = data.sort((a, b) =>
     (b.appliedAt ?? "").localeCompare(a.appliedAt ?? "")
   )
+  return { status: "ok", applications }
 }
 
 export async function getApplicationCount(
