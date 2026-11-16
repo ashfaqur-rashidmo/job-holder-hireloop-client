@@ -23,6 +23,8 @@ export async function POST(request: Request) {
     const role =
       searchParams.get("role") === "recruiter" ? "recruiter" : "seeker"
     const priceId = role === "recruiter" ? RECRUITER_PRICE_ID : SEEKER_PRICE_ID
+    // Remember which plan was bought so payments can show it later.
+    const plan = searchParams.get("plan") || undefined
 
     // Create Checkout Sessions from body params.
     const session = await stripe.checkout.sessions.create({
@@ -35,7 +37,13 @@ export async function POST(request: Request) {
       mode: "payment",
       customer_email: userSession?.user?.email ?? undefined,
       metadata: userSession?.user?.id
-        ? { userId: userSession.user.id, role }
+        ? {
+            userId: userSession.user.id,
+            role,
+            // Only include `plan` when present — Stripe metadata values
+            // must be strings.
+            ...(plan ? { plan } : {}),
+          }
         : undefined,
       success_url: `${origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/payment?canceled=1`,
