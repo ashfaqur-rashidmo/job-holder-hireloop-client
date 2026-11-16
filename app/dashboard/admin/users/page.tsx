@@ -3,7 +3,7 @@ import Link from "next/link"
 
 import { AdminUsersView } from "@/app/component/AdminUsers/AdminUsersView"
 import { buttonVariants } from "@/components/ui/button"
-import { getUsers } from "@/lib/api/users.server"
+import { getUsers } from "@/lib/api/users"
 import { auth } from "@/lib/auth"
 import { USER_ROLES, type PlatformUser, type UserRole } from "@/lib/user"
 
@@ -35,7 +35,7 @@ export default async function AdminUsersPage() {
     const rows = Array.isArray(response) ? response : response.users
 
     users = rows.map((row) => ({
-      id: row.id,
+      id: row._id,
       name: row.name ?? "",
       email: row.email,
       role: USER_ROLES.includes(row.role as UserRole)

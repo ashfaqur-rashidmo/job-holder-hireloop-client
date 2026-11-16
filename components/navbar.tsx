@@ -32,6 +32,13 @@ export function Navbar() {
   const userName = session?.user?.name || session?.user?.email
   const isAuthenticated = !!session
 
+  // Profile image: your custom `imageurl` field first, then better-auth's
+  // built-in `image` field. Placeholder shown when neither is set.
+  const userImage =
+    (session?.user as { imageurl?: string } | undefined)?.imageurl ||
+    session?.user?.image ||
+    "/images/avatar-placeholder.svg"
+
   // The dashboard renders its own sidebar shell.
   if (pathname.startsWith("/dashboard")) {
     return null
@@ -70,6 +77,14 @@ export function Navbar() {
 
             {isAuthenticated ? (
               <>
+                <Image
+                  src={userImage}
+                  alt={userName || "User avatar"}
+                  width={28}
+                  height={28}
+                  unoptimized
+                  className="size-7 shrink-0 rounded-full border border-white/10 object-cover"
+                />
                 <span className="text-sm font-medium text-gray-300">
                   Welcome, {userName}
                 </span>
@@ -154,6 +169,14 @@ export function Navbar() {
               ))}
               {isAuthenticated ? (
                 <div className="my-4 flex items-center gap-3 border-t border-white/10 pt-4">
+                  <Image
+                    src={userImage}
+                    alt={userName || "User avatar"}
+                    width={32}
+                    height={32}
+                    unoptimized
+                    className="size-8 shrink-0 rounded-full border border-white/10 object-cover"
+                  />
                   <span className="text-sm font-medium text-gray-300">
                     Welcome, {userName}
                   </span>

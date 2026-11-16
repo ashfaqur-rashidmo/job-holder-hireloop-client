@@ -10,7 +10,6 @@ import {
   EyeOff,
   Briefcase,
   Building2,
-  Shield,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
@@ -18,16 +17,19 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth-client"
 
+type SignUpRole = "seeker" | "recruiter"
+
 type SignUpData = {
   fullName: string
   email: string
   password: string
   confirmPassword: string
-  role: "seeker" | "recruiter" | "admin"
+  role: SignUpRole
+  image?: string
 }
 
 type RoleOption = {
-  value: "seeker" | "recruiter" | "admin"
+  value: SignUpRole
   label: string
   description: string
   icon: React.ElementType
@@ -46,12 +48,6 @@ const ROLE_OPTIONS: RoleOption[] = [
     description: "Hiring talent",
     icon: Building2,
   },
-  {
-    value: "admin",
-    label: "Admin",
-    description: "Platform administrator",
-    icon: Shield,
-  },
 ]
 
 export default function SignUpPage() {
@@ -59,9 +55,96 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [role, setRole] = useState<"seeker" | "recruiter" | "admin">("seeker")
+  const [role, setRole] = useState<SignUpRole>("seeker")
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imageUrl, setImageUrl] = useState("")
+  const [isImageUploading, setIsImageUploading] = useState(false)
   const router = useRouter()
   const { data: session, isPending } = authClient.useSession()
+
+  // Runs whenever the user picks a (profile) image file. The actual
+  // upload is NOT implemented yet — this only keeps the selected file
+  // in state so the upload logic can read it later.
+  const handleImageChange = async (
+  event: React.ChangeEvent<HTMLInputElement>
+) => {
+  const file = event.target.files?.[0] ?? null
+
+  if (!file) return
+
+  // Validate image type
+  if (!file.type.startsWith("image/")) {
+    setError("Please choose a valid image file.")
+    event.target.value = ""
+    setImageFile(null)
+    setImageUrl("")
+    return
+  }
+
+  // Validate file size (maximum 5 MB)
+  if (file.size > 5 * 1024 * 1024) {
+    setError("Image size must be less than 5 MB.")
+    event.target.value = ""
+    setImageFile(null)
+    setImageUrl("")
+    return
+  }
+
+  setError(null)
+  setImageFile(file)
+  setImageUrl("")
+  setIsImageUploading(true)
+
+  try {
+    const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY
+
+    if (!apiKey) {
+      throw new Error("ImgBB API key is missing.")
+    }
+
+    const formData = new FormData()
+    formData.append("image", file)
+
+    const response = await fetch(
+      `https://api.imgbb.com/1/upload?key=${apiKey}`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    )
+
+    const result = await response.json()
+
+    if (!response.ok || !result.success || !result.data?.url) {
+      throw new Error(
+        result.error?.message || "Failed to upload profile image."
+      )
+    }
+
+    // Save permanent image URL
+    setImageUrl(result.data.url)
+
+    console.log("Uploaded image URL:", result.data.url)
+
+    toast.success("Profile image uploaded successfully!")
+  } catch (error) {
+    console.error("Image upload error:", error)
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Image upload failed."
+
+    setError(message)
+    setImageUrl("")
+    setImageFile(null)
+    event.target.value = ""
+
+    toast.error(message)
+  } finally {
+    setIsImageUploading(false)
+  }
+}
 
   useEffect(() => {
     if (!isPending && session) {
@@ -97,30 +180,48 @@ export default function SignUpPage() {
 
     setIsLoading(true)
 
-    try {
-      const response = await authClient.signUp.email({
-        email: collected.email,
-        password: collected.password,
-        name: collected.fullName,
-        callbackURL: "/",
-        role: collected.role,
-      } as never)
+   try {
+  const response = await authClient.signUp.email({
+    email: collected.email,
+    password: collected.password,
+    name: collected.fullName,
+    callbackURL: "/",
+    role: collected.role,
+    image: imageUrl || undefined,
+  } as never)
 
-      console.log("SignUp Response:", response)
+  console.log("Signup response:", response)
 
-      toast.success("Account created successfully!", {
-        description: "Welcome to HireLoop, " + collected.fullName,
-      })
+  if (response.error) {
+    const message =
+      response.error.message || "Failed to create account."
 
-      router.push("/")
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to create account"
-      setError(message)
-      toast.error("Signup failed", { description: message })
-    } finally {
-      setIsLoading(false)
-    }
+    setError(message)
+    toast.error("Signup failed", {
+      description: message,
+    })
+
+    return
+  }
+
+  toast.success("Account created successfully!", {
+    description: `Welcome to HireLoop, ${collected.fullName}`,
+  })
+
+  router.push("/")
+} catch (err: unknown) {
+  console.error("Signup exception:", err)
+
+  const message =
+    err instanceof Error ? err.message : "Failed to create account."
+
+  setError(message)
+  toast.error("Signup failed", {
+    description: message,
+  })
+} finally {
+  setIsLoading(false)
+}
   }
 
   const togglePasswordVisibility = () => {
@@ -170,6 +271,34 @@ export default function SignUpPage() {
                   className="h-10 border border-white/10 bg-[#050505] pl-10 placeholder:text-gray-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="profileImage"
+                className="block text-sm font-medium text-gray-300"
+              >
+                Profile image <span className="text-gray-500">(optional)</span>
+              </label>
+              <div className="flex items-center gap-3">
+                <label
+                  htmlFor="profileImage"
+                  className="inline-flex h-10 cursor-pointer items-center rounded-lg border border-white/10 bg-[#050505] px-4 text-sm text-gray-300 transition-colors hover:border-white/30 hover:text-white"
+                >
+                  Choose image
+                </label>
+                <span className="min-w-0 truncate text-xs text-gray-500">
+                  {imageFile ? imageFile.name : "No image selected"}
+                </span>
+              </div>
+              <input
+                type="file"
+                name="profileImage"
+                id="profileImage"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
             </div>
 
             <div className="space-y-2">
@@ -301,7 +430,7 @@ export default function SignUpPage() {
               variant="gradient"
               size="lg"
               className="w-full py-3 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isLoading}
+              disabled={isLoading || isImageUploading}
             >
               {isLoading ? "Creating account..." : "Create account"}
             </Button>

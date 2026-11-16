@@ -194,6 +194,13 @@ export function DashboardSidebar() {
 
   const userName = session?.user?.name?.trim() || "Guest"
   const userEmail = session?.user?.email || ""
+
+  // Profile image: your custom `imageurl` field first, then better-auth's
+  // built-in `image` field. Falls back to the initials circle below.
+  const userImage =
+    (session?.user as { imageurl?: string } | undefined)?.imageurl ||
+    session?.user?.image
+
   const initials = userName
     .split(" ")
     .map((part) => part.charAt(0))
@@ -220,9 +227,20 @@ export function DashboardSidebar() {
         </Link>
 
         <div className="flex items-center gap-3 rounded-lg bg-sidebar-accent/60 p-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-indigo-500/15 text-sm font-semibold text-indigo-400">
-            {initials || "U"}
-          </div>
+          {userImage ? (
+            <Image
+              src={userImage}
+              alt={userName}
+              width={36}
+              height={36}
+              unoptimized
+              className="size-9 shrink-0 rounded-full border border-white/10 object-cover"
+            />
+          ) : (
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-indigo-500/15 text-sm font-semibold text-indigo-400">
+              {initials || "U"}
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-sidebar-foreground">
               {isPending ? "Loading…" : userName}

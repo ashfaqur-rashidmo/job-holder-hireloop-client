@@ -1,7 +1,7 @@
 "use server"
 
 import type { UserRole } from "@/lib/user"
-import { protectedMutation } from "@/lib/core/server"
+import { authFetch, protectedMutation } from "@/lib/core/server"
 
 // Browser-safe user API helpers (no server-only imports here —
 // server-side user helpers live in lib/api/users.server.ts).
@@ -61,4 +61,11 @@ export const UpdateUserRole = async (
     success: true,
     message: "Role updated.",
   }
+}
+
+
+
+ export const getUsers = async () => {
+  const res = await authFetch(`${BASE_URL}/users`)
+  return res.json()
 }

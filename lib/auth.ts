@@ -1,7 +1,6 @@
 import { betterAuth } from "better-auth"
 import { MongoClient } from "mongodb"
 import { mongodbAdapter } from "@better-auth/mongo-adapter"
-import { admin } from "better-auth/plugins"
 
 
 const client = new MongoClient(process.env.BETTER_AUTH_DB_URI as string)
@@ -28,9 +27,7 @@ export const auth = betterAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     },
   },
-  plugins: [
-    admin()
-  ],
+ 
   
   database: mongodbAdapter(db, {
     client,
