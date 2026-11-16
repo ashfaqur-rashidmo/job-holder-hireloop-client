@@ -34,7 +34,15 @@ export default async function AdminUsersPage() {
     // The admin API returns { users, total } in current versions.
     const rows = Array.isArray(response) ? response : response.users
 
-    users = rows.map((row) => ({
+    users = rows.map((row: {
+      _id: string
+      name?: string | null
+      email: string
+      role?: string | null
+      premium?: boolean
+      emailVerified?: boolean
+      createdAt: string | Date
+    }) => ({
       id: row._id,
       name: row.name ?? "",
       email: row.email,
