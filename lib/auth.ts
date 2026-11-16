@@ -37,6 +37,12 @@ export const auth = betterAuth({
         input: true,
         defaultValue: "",
       },
+      // Recruiter profile (Settings page): the company they represent.
+      company: {
+        type: "string",
+        input: true,
+        defaultValue: "",
+      },
     },
   },
   socialProviders: {
