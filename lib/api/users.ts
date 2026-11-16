@@ -1,4 +1,7 @@
+"use server"
+
 import type { UserRole } from "@/lib/user"
+import { protectedMutation } from "@/lib/core/server"
 
 // Browser-safe user API helpers (no server-only imports here —
 // server-side user helpers live in lib/api/users.server.ts).
@@ -30,13 +33,10 @@ export const UpdateUserRole = async (
   userId: string,
   role: UserRole
 ): Promise<{ success: boolean; message: string }> => {
-  const response = await fetch(`${BASE_URL}/users/${userId}/role`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ role }),
-  })
+
+  const api = `${BASE_URL}/users/${userId}/role`
+  const response = await protectedMutation(api, "PATCH", { role })
+
 
   const data = (await response.json().catch(() => null)) as {
     matchedCount?: number

@@ -42,9 +42,9 @@ const REQUIRED_FIELDS: { key: keyof JobFormData; label: string }[] = [
   { key: "qualifications", label: "Qualifications & Requirements" },
 ]
 
-// Free plan: recruiters can keep up to 5 active job posts. Paying the
+// Free plan: recruiters can keep up to 10 active job posts. Paying the
 // recruiter plan removes the cap (premium users are unlimited).
-const FREE_JOB_POST_LIMIT = 5
+const FREE_JOB_POST_LIMIT = 10
 
 export default function NewJobPage() {
   const [form, setForm] = React.useState<JobFormData>(INITIAL_FORM)

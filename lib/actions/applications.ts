@@ -1,7 +1,7 @@
 "use server"
 
 import type { JobApplication, JobApplicationInput } from "@/lib/application"
-import { authFetch } from "@/lib/core/server"
+import { authFetch, protectedMutation } from "@/lib/core/server"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000"
 
@@ -30,13 +30,10 @@ export async function applyForJob(
     interviewDate: null,
   }
 
-  const response = await fetch(`${BASE_URL}/applications`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  })
+  // Authenticated POST — the backend requires a seeker's Bearer token
+  // on this route (verifyToken + verifySeeker).
+  const api = `${BASE_URL}/applications`
+  const response = await protectedMutation(api, "POST", payload)
 
   const result = (await response.json().catch(() => null)) as {
     insertedId?: string
@@ -58,8 +55,6 @@ export async function applyForJob(
     }
   }
 
-  
-
   return {
     success: true,
     message: "Application submitted successfully!",
@@ -70,10 +65,12 @@ export async function applyForJob(
 export async function getApplications(
   applicantId: string
 ): Promise<JobApplication[]> {
-  const response = await fetch(
-    `${BASE_URL}/applications?applicantId=${applicantId}`,
-    { cache: "no-store" }
-  )
+  // Authenticated: GET /applications is protected by verifyToken — a
+  // plain fetch here would 401 (see backend).
+  const api = `${BASE_URL}/applications?applicantId=${encodeURIComponent(
+    applicantId
+  )}`
+  const response = await authFetch(api)
 
   if (!response.ok) {
     throw new Error("Failed to load applications.")
