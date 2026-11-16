@@ -19,6 +19,24 @@ export const auth = betterAuth({
         input: true,
         defaultValue: "seeker",
       },
+      // Seeker profile details (Settings page). Saved through better-auth's
+      // built-in update-user endpoint — no custom backend needed.
+      headline: {
+        type: "string",
+        input: true,
+        defaultValue: "",
+      },
+      bio: {
+        type: "string",
+        input: true,
+        defaultValue: "",
+      },
+      // Skills as one comma-separated string (e.g. "Figma,UI Design").
+      skills: {
+        type: "string",
+        input: true,
+        defaultValue: "",
+      },
     },
   },
   socialProviders: {
